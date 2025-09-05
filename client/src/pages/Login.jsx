@@ -32,15 +32,13 @@ const Login = () => {
         if(data.success)
         {
           setIsLoggedIn(true)
-          // Fetch fresh profile to decide routing
-          const profile = await axios.get(backendUrl + '/api/user/data')
-          const user = profile.data?.userData || {}
-          if (role === 'donor') {
-            navigate('/donor-dashboard')
-          } else {
-            const needsOnboarding = !user.phone || !user.bloodGroup || !user.isAccountVerified
-            navigate(needsOnboarding ? '/patient-onboarding' : '/patient-dashboard')
+          await getUserData()
+          // Show success message if provided
+          if (data.message) {
+            toast.success(data.message)
           }
+          // For new signups, always go to email verification first
+          navigate('/email-verify')
         }
         else
         {
@@ -54,14 +52,30 @@ const Login = () => {
         if(data.success)
         {
           setIsLoggedIn(true)
-          const roleFromLogin = data.role
-          const profile = await axios.get(backendUrl + '/api/user/data')
-          const user = profile.data?.userData || {}
-          if (roleFromLogin === 'donor') {
-            navigate('/donor-dashboard')
+          await getUserData()
+          // Show success message if provided
+          if (data.message) {
+            toast.success(data.message)
+          }
+          // For login, check if already verified and redirect accordingly
+          const userDataResponse = await getUserData()
+          if (userDataResponse?.isAccountVerified) {
+            const roleFromLogin = data.role
+            if (roleFromLogin === 'donor') {
+              // Check if donor profile is completed
+              const profile = await axios.get(backendUrl + '/api/donor/profile')
+              if (profile.data?.success && profile.data?.profile?.profileCompleted) {
+                navigate('/donor-dashboard')
+              } else {
+                navigate('/donor-profile')
+              }
+            } else {
+              // Check if patient profile is completed
+              const needsOnboarding = !userDataResponse.phone || !userDataResponse.bloodGroup
+              navigate(needsOnboarding ? '/patient-onboarding' : '/patient-dashboard')
+            }
           } else {
-            const needsOnboarding = !user.phone || !user.bloodGroup || !user.isAccountVerified
-            navigate(needsOnboarding ? '/patient-onboarding' : '/patient-dashboard')
+            navigate('/email-verify')
           }
         }
         else

@@ -49,10 +49,33 @@ const EmailVerify = () => {
       if(data.success)
       {
         toast.success(data.message)
-        getUserData()
+        await getUserData()
         const params = new URLSearchParams(window.location.search)
         const back = params.get('back')
-        navigate(back ? `/${back}` : '/')
+        
+        if (back) {
+          navigate(`/${back}`)
+        } else {
+          // Redirect based on user role and profile completion
+          const updatedUserData = await getUserData()
+          if(updatedUserData?.role === 'donor') {
+            // Check if donor profile is completed
+            try {
+              const profile = await axios.get(backendUrl + '/api/donor/profile')
+              if (profile.data?.success && profile.data?.profile?.profileCompleted) {
+                navigate('/donor-dashboard')
+              } else {
+                navigate('/donor-profile')
+              }
+            } catch (err) {
+              navigate('/donor-profile')
+            }
+          } else {
+            // Check if patient profile is completed
+            const needsOnboarding = !updatedUserData.phone || !updatedUserData.bloodGroup
+            navigate(needsOnboarding ? '/patient-onboarding' : '/patient-dashboard')
+          }
+        }
       }
       else
       {
@@ -66,7 +89,16 @@ const EmailVerify = () => {
   }
 
   useEffect(() => {
-    isLoggedIn && userData && userData.isAccountVerified && navigate('/')
+    if (isLoggedIn && userData && userData.isAccountVerified) {
+      // Redirect based on role and profile completion
+      if (userData.role === 'donor') {
+        // Check if profile is completed by making a request to dashboard
+        // If it fails, redirect to profile completion
+        navigate('/donor-dashboard')
+      } else {
+        navigate('/patient-dashboard')
+      }
+    }
   }, [isLoggedIn, userData])
 
   return (

@@ -7,6 +7,7 @@ import ResetPassword from './pages/ResetPassword'
 import { ToastContainer } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 import DonorDashboard from './pages/DonorDashboard'
+import DonorProfile from './pages/DonorProfile'
 import PatientDashboard from './pages/PatientDashboard'
 import RoleSelect from './pages/RoleSelect'
 import PatientOnboarding from './pages/PatientOnboarding'
@@ -23,6 +24,7 @@ const App = () => {
         <Route path='/auth' element={<Login />} />
         <Route path='/email-verify' element={<EmailVerify />} />
         <Route path='/reset-password' element={<ResetPassword />} />
+        <Route path='/donor-profile' element={<DonorProfile />} />
         <Route path='/donor-dashboard' element={<DonorDashboard />} />
         <Route path='/patient-dashboard' element={<PatientDashboard />} />
         <Route path='/patient-onboarding' element={<PatientOnboarding />} />
