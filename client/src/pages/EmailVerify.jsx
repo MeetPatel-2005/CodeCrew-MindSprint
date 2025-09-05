@@ -50,7 +50,12 @@ const EmailVerify = () => {
       {
         toast.success(data.message)
         getUserData()
-        navigate('/')
+        // Redirect based on user role and profile completion
+        if(userData?.role === 'donor') {
+          navigate('/donor-profile')
+        } else {
+          navigate('/')
+        }
       }
       else
       {
@@ -64,7 +69,16 @@ const EmailVerify = () => {
   }
 
   useEffect(() => {
-    isLoggedIn && userData && userData.isAccountVerified && navigate('/')
+    if (isLoggedIn && userData && userData.isAccountVerified) {
+      // Redirect based on role and profile completion
+      if (userData.role === 'donor') {
+        // Check if profile is completed by making a request to dashboard
+        // If it fails, redirect to profile completion
+        navigate('/donor-dashboard')
+      } else {
+        navigate('/patient-dashboard')
+      }
+    }
   }, [isLoggedIn, userData])
 
   return (

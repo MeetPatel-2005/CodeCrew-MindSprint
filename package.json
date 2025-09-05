@@ -1,0 +1,24 @@
+{
+  "name": "codecrew-mindsprint",
+  "version": "1.0.0",
+  "description": "[![Hackathon](https://img.shields.io/badge/Mindsprint-48H%20Hackathon-red?style=flat-square&logo=hackaday)]()",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MeetPatel-2005/CodeCrew-MindSprint.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/MeetPatel-2005/CodeCrew-MindSprint/issues"
+  },
+  "homepage": "https://github.com/MeetPatel-2005/CodeCrew-MindSprint#readme",
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}
