@@ -295,10 +295,11 @@ export const sendVerifyOtp = async (req, res) => {
 
 // ✅ Controller to verify user's email using the OTP
 export const verifyEmail = async (req, res) => {
-    const { userId, otp } = req.body;
+    const { otp } = req.body;
+    const userId = req.userId || req.body.userId;
 
-    // ⚠️ Check if both userId and otp are provided
-    if (!userId || !otp) {
+    // ⚠️ Check if otp is provided
+    if (!otp) {
         return res.json({
             success: false,
             message: 'Missing details'
@@ -306,7 +307,7 @@ export const verifyEmail = async (req, res) => {
     }
 
     try {
-        // 🔍 Find the user by ID
+        // 🔍 Find the user by ID (from auth middleware or body fallback)
         const user = await userModel.findById(userId);
 
         // ❌ User not found in database

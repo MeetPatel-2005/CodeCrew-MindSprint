@@ -12,20 +12,14 @@ const Navbar = () => {
   const {userData, backendUrl, setUserData, setIsLoggedIn} = useContext(AppContent)
 
   const sendVerificationOtp = async () => {
-    if (!userData || !userData.email) {
-      toast.error("Please wait, loading your data...");
-      return;
-    }
-  
     try {
-      const { data } = await axios.post(`${backendUrl}/api/auth/send-verify-otp`, {
-        email: userData.email
-      });
-  
-      data.success 
-        ? toast.success(data.message) 
-        : toast.error(data.message);
-  
+      const { data } = await axios.post(`${backendUrl}/api/auth/send-verify-otp`);
+      if (data.success) {
+        toast.success(data.message);
+        navigate('/email-verify');
+      } else {
+        toast.error(data.message);
+      }
     } catch (error) {
       toast.error(error.message);
     }
