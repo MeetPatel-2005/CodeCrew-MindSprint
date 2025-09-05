@@ -50,7 +50,9 @@ const EmailVerify = () => {
       {
         toast.success(data.message)
         getUserData()
-        navigate('/')
+        const params = new URLSearchParams(window.location.search)
+        const back = params.get('back')
+        navigate(back ? `/${back}` : '/')
       }
       else
       {

@@ -32,6 +32,26 @@ const userSchema = new mongoose.Schema({
         enum: ['donor', 'patient'],
         default: 'patient'
     },
+    phone: {              // ---> Contact number (optional)
+        type: String,
+        default: ''
+    },
+    hospital: {           // ---> Patient's hospital or donor's preferred hospital (optional)
+        type: String,
+        default: ''
+    },
+    bloodGroup: {         // ---> Blood group for matching
+        type: String,
+        default: ''
+    },
+    lastDonationAt: {     // ---> Track donor's last donation date (epoch ms)
+        type: Number,
+        default: 0
+    },
+    location: {           // ---> Simple location text
+        type: String,
+        default: ''
+    },
     resetOtp: {        // ---> OTP for reset password
         type: String,
         default: ''

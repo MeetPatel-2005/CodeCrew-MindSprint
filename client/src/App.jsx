@@ -9,6 +9,8 @@ import "react-toastify/dist/ReactToastify.css"
 import DonorDashboard from './pages/DonorDashboard'
 import PatientDashboard from './pages/PatientDashboard'
 import RoleSelect from './pages/RoleSelect'
+import PatientOnboarding from './pages/PatientOnboarding'
+import ProfileSettings from './pages/ProfileSettings'
 
 const App = () => {
   return (
@@ -23,6 +25,8 @@ const App = () => {
         <Route path='/reset-password' element={<ResetPassword />} />
         <Route path='/donor-dashboard' element={<DonorDashboard />} />
         <Route path='/patient-dashboard' element={<PatientDashboard />} />
+        <Route path='/patient-onboarding' element={<PatientOnboarding />} />
+        <Route path='/profile-settings' element={<ProfileSettings />} />
       </Routes>
     </div>
   )

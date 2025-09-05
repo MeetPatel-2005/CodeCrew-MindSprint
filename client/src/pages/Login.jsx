@@ -32,8 +32,15 @@ const Login = () => {
         if(data.success)
         {
           setIsLoggedIn(true)
-          await getUserData()
-          navigate(role === 'donor' ? '/donor-dashboard' : '/patient-dashboard')
+          // Fetch fresh profile to decide routing
+          const profile = await axios.get(backendUrl + '/api/user/data')
+          const user = profile.data?.userData || {}
+          if (role === 'donor') {
+            navigate('/donor-dashboard')
+          } else {
+            const needsOnboarding = !user.phone || !user.bloodGroup || !user.isAccountVerified
+            navigate(needsOnboarding ? '/patient-onboarding' : '/patient-dashboard')
+          }
         }
         else
         {
@@ -48,8 +55,14 @@ const Login = () => {
         {
           setIsLoggedIn(true)
           const roleFromLogin = data.role
-          await getUserData()
-          navigate(roleFromLogin === 'donor' ? '/donor-dashboard' : '/patient-dashboard')
+          const profile = await axios.get(backendUrl + '/api/user/data')
+          const user = profile.data?.userData || {}
+          if (roleFromLogin === 'donor') {
+            navigate('/donor-dashboard')
+          } else {
+            const needsOnboarding = !user.phone || !user.bloodGroup || !user.isAccountVerified
+            navigate(needsOnboarding ? '/patient-onboarding' : '/patient-dashboard')
+          }
         }
         else
         {
