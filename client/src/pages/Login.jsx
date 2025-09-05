@@ -1,7 +1,7 @@
 import React, { useContext, useState } from 'react'
 import { assets } from '../assets/assets';
 import '../Login.css'; // We'll add autofill fix here
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { AppContent } from '../context/AppContext';
 import { toast } from 'react-toastify'
 import axios from 'axios';
@@ -11,11 +11,14 @@ const Login = () => {
   const navigate = useNavigate()
 
   const {backendUrl, setIsLoggedIn,setUserData, getUserData} = useContext(AppContent)
+  const [searchParams] = useSearchParams()
 
-  const [state, setState] = useState('Sign Up')
+  const isLoginOnly = (searchParams.get('mode') === 'login')
+  const [state, setState] = useState(isLoginOnly ? 'Login' : 'Sign Up')
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const role = searchParams.get('role') === 'donor' ? 'donor' : 'patient'
 
   const onSubmitHandler = async (e) => {
     try
@@ -24,13 +27,13 @@ const Login = () => {
 
       if(state === 'Sign Up')
       {
-        const {data} = await axios.post(backendUrl + '/api/auth/register', {name, email, password})
+        const {data} = await axios.post(backendUrl + '/api/auth/register', {name, email, password, role})
 
         if(data.success)
         {
           setIsLoggedIn(true)
           await getUserData()
-          navigate('/')
+          navigate(role === 'donor' ? '/donor-dashboard' : '/patient-dashboard')
         }
         else
         {
@@ -44,8 +47,9 @@ const Login = () => {
         if(data.success)
         {
           setIsLoggedIn(true)
+          const roleFromLogin = data.role
           await getUserData()
-          navigate('/')
+          navigate(roleFromLogin === 'donor' ? '/donor-dashboard' : '/patient-dashboard')
         }
         else
         {
@@ -73,7 +77,7 @@ const Login = () => {
         </p>
 
         <form onSubmit={onSubmitHandler}>
-          {state === 'Sign Up' && (
+          {state === 'Sign Up' && !isLoginOnly && (
             <div className='mb-4 flex items-center gap-3 w-full px-5 py-2.5 rounded-full bg-[#333A5C]'>
               <img src={assets.person_icon} alt="" />
               <input
@@ -118,26 +122,28 @@ const Login = () => {
           </button>
         </form>
 
-        {state === 'Sign Up' ? (
-          <p className='text-gray-400 text-center text-xs mt-4'>
-            Already have an account?{' '}
-            <span
-              onClick={() => setState('Login')}
-              className='text-blue-400 cursor-pointer underline'
-            >
-              Login here
-            </span>
-          </p>
-        ) : (
-          <p className='text-gray-400 text-center text-xs mt-4'>
-            Don't have an account?{' '}
-            <span
-              onClick={() => setState('Sign Up')}
-              className='text-blue-400 cursor-pointer underline'
-            >
-              Sign up
-            </span>
-          </p>
+        {!isLoginOnly && (
+          state === 'Sign Up' ? (
+            <p className='text-gray-400 text-center text-xs mt-4'>
+              Already have an account?{' '}
+              <span
+                onClick={() => setState('Login')}
+                className='text-blue-400 cursor-pointer underline'
+              >
+                Login here
+              </span>
+            </p>
+          ) : (
+            <p className='text-gray-400 text-center text-xs mt-4'>
+              Don't have an account?{' '}
+              <span
+                onClick={() => setState('Sign Up')}
+                className='text-blue-400 cursor-pointer underline'
+              >
+                Sign up
+              </span>
+            </p>
+          )
         )}
       </div>
     </div>

@@ -16,7 +16,7 @@ import { EMAIL_VERIFY_TEMPLATE, PASSWORD_RESET_TEMPLATE } from '../config/emailT
 export const register = async (req, res) => {
 
     // 📨 Step 1: Extract user input from request body
-    const { name, email, password } = req.body;
+    const { name, email, password, role } = req.body;
 
     // ❗ Step 2: Check if any field is missing
     if (!name || !email || !password) {
@@ -45,7 +45,8 @@ export const register = async (req, res) => {
         const user = new userModel({
             name: name,
             email: email,
-            password: hashedPassword // Store hashed password only
+            password: hashedPassword, // Store hashed password only
+            role: role || 'patient'
         });
 
         // 💾 Step 7: Save the new user to the database
@@ -53,7 +54,7 @@ export const register = async (req, res) => {
 
         // 🔏 Step 8: Generate JWT token with user ID as payload
         const token = jwt.sign(
-            { id: user._id }, // user ID goes inside token
+            { id: user._id, role: user.role }, // include role in token
             process.env.JWT_SECRET, // secret key from .env
             { expiresIn: '7d' } // token valid for 7 days
         );
@@ -86,7 +87,8 @@ export const register = async (req, res) => {
 
         // ✅ Step 10: Send success response to frontend
         return res.json({
-            success: true
+            success: true,
+            role: user.role
         });
     } catch (err) {
         // ❌ Step 11: Handle and return server error
@@ -135,7 +137,7 @@ export const login = async (req, res) => {
 
         // 🔏 Step 5: Generate JWT token with user ID as payload
         const token = jwt.sign(
-            { id: user._id }, // user ID as token payload
+            { id: user._id, role: user.role }, // include role
             process.env.JWT_SECRET, // secret key stored in .env file
             { expiresIn: '7d' } // token expires in 7 days
         );
@@ -150,7 +152,8 @@ export const login = async (req, res) => {
 
         // ✅ Step 7: Return success response
         return res.json({
-            success: true
+            success: true,
+            role: user.role
         });
     }
     catch (error) {

@@ -27,6 +27,11 @@ const userSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
+    role: {               // ---> Role-based access control
+        type: String,
+        enum: ['donor', 'patient'],
+        default: 'patient'
+    },
     resetOtp: {        // ---> OTP for reset password
         type: String,
         default: ''

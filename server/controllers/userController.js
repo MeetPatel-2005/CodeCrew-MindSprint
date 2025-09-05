@@ -22,7 +22,8 @@ export const getUserData = async (req, res) => {
             success: true,
             userData: {
                 name: user.name,                  // User's full name
-                isAccountVerified: user.isAccountVerified // Account verification status (true/false)
+                isAccountVerified: user.isAccountVerified, // Account verification status (true/false)
+                role: user.role
             }
         });
     } 
