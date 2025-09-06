@@ -16,7 +16,7 @@ import { EMAIL_VERIFY_TEMPLATE, PASSWORD_RESET_TEMPLATE } from '../config/emailT
 export const register = async (req, res) => {
 
     // 📨 Step 1: Extract user input from request body
-    const { name, email, password } = req.body;
+    const { name, email, password, role } = req.body;
 
     // ❗ Step 2: Check if any field is missing
     if (!name || !email || !password) {
@@ -45,20 +45,28 @@ export const register = async (req, res) => {
         const user = new userModel({
             name: name,
             email: email,
-            password: hashedPassword // Store hashed password only
+            password: hashedPassword, // Store hashed password only
+            role: role || 'patient'
         });
 
-        // 💾 Step 7: Save the new user to the database
+        // 🔢 Step 7: Generate a 6-digit OTP for email verification
+        const otp = String(Math.floor(100000 + Math.random() * 900000));
+
+        // 🕒 Step 8: Set OTP and its expiry time (24 hours from now)
+        user.verifyOtp = otp;
+        user.verifyOtpExpiredAt = Date.now() + 24 * 60 * 60 * 1000;
+
+        // 💾 Step 9: Save the new user to the database
         await user.save();
 
-        // 🔏 Step 8: Generate JWT token with user ID as payload
+        // 🔏 Step 10: Generate JWT token with user ID as payload
         const token = jwt.sign(
-            { id: user._id }, // user ID goes inside token
+            { id: user._id, role: user.role }, // include role in token
             process.env.JWT_SECRET, // secret key from .env
             { expiresIn: '7d' } // token valid for 7 days
         );
 
-        // 🍪 Step 9: Send token in HTTP-only cookie (browser stores it)
+        // 🍪 Step 11: Send token in HTTP-only cookie (browser stores it)
         res.cookie('token', token, {
             httpOnly: true, // cookie can't be accessed by JS (prevents XSS)
             secure: process.env.NODE_ENV === 'production', // use secure only on HTTPS (prod)
@@ -66,27 +74,21 @@ export const register = async (req, res) => {
             maxAge: 7 * 24 * 60 * 60 * 1000 // valid for 7 days (in ms)
         });
 
-        // Configure the welcome email (plain text only)
+        // ✉️ Step 12: Send verification OTP email
         const mailOptions = {
             from: process.env.SENDER_EMAIL, // Sender email address (from environment variable)
             to: email,                      // Recipient's email address
-            subject: 'Welcome to Authentication Website', // Subject line of the email
-            text: `Hello,
-        
-        Welcome to the Authentication Website! Your account has been successfully created with the email ID: ${email}.
-        
-        We're excited to have you with us. If you have any questions, just reply to this email.
-        
-        Best regards,  
-        The Auth Team` // Plain text body of the email
+            subject: 'Account Verification OTP', // Subject line of the email
+            html: EMAIL_VERIFY_TEMPLATE.replace("{{otp}}", otp).replace("{{email}}", email)
         };
-
 
         await transporter.sendMail(mailOptions);
 
-        // ✅ Step 10: Send success response to frontend
+        // ✅ Step 13: Send success response to frontend
         return res.json({
-            success: true
+            success: true,
+            role: user.role,
+            message: "Account created successfully! Please check your email for verification OTP."
         });
     } catch (err) {
         // ❌ Step 11: Handle and return server error
@@ -135,7 +137,7 @@ export const login = async (req, res) => {
 
         // 🔏 Step 5: Generate JWT token with user ID as payload
         const token = jwt.sign(
-            { id: user._id }, // user ID as token payload
+            { id: user._id, role: user.role }, // include role
             process.env.JWT_SECRET, // secret key stored in .env file
             { expiresIn: '7d' } // token expires in 7 days
         );
@@ -150,7 +152,8 @@ export const login = async (req, res) => {
 
         // ✅ Step 7: Return success response
         return res.json({
-            success: true
+            success: true,
+            role: user.role
         });
     }
     catch (error) {
@@ -295,10 +298,11 @@ export const sendVerifyOtp = async (req, res) => {
 
 // ✅ Controller to verify user's email using the OTP
 export const verifyEmail = async (req, res) => {
-    const { userId, otp } = req.body;
+    const { otp } = req.body;
+    const userId = req.userId || req.body.userId;
 
-    // ⚠️ Check if both userId and otp are provided
-    if (!userId || !otp) {
+    // ⚠️ Check if otp is provided
+    if (!otp) {
         return res.json({
             success: false,
             message: 'Missing details'
@@ -306,7 +310,7 @@ export const verifyEmail = async (req, res) => {
     }
 
     try {
-        // 🔍 Find the user by ID
+        // 🔍 Find the user by ID (from auth middleware or body fallback)
         const user = await userModel.findById(userId);
 
         // ❌ User not found in database

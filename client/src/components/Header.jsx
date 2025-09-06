@@ -1,5 +1,4 @@
-// import React, { useContext } from 'react'
-// import { assets } from '../assets/assets';
+import React from 'react'
 import { AppContent } from "../context/AppContext";
 import { Link } from "react-router-dom";
 import Marquee from "react-fast-marquee";
@@ -14,18 +13,11 @@ import { MdOutlineHealthAndSafety } from "react-icons/md";
 import '../index.css'
 
 const Header = () => {
-  // const {userData} = useContext(AppContent)
-
   return (
     <>
       <FaPlus className="t1 text-[#8cff5e] text-[45rem] absolute rotate-[25deg] left-[-1%] top-[2%] z-[7]" />
       <MdOutlineHealthAndSafety className="t2 text-[#8cff5e] text-[40rem] absolute rotate-[-15deg] right-[5%] top-[3%] z-[7]"  />
       <div className="w-full h-auto flex flex-col justify-center items-center text-center gap-4 sm:gap-6 p-4 sm:p-6 lg:p-6">
-        {/* <img src={assets.header_img} alt="" className='w-36 h-36 rounded-full mb-6' /> */}
-
-        {/* <h1 className='flex items-center gap-2 text-xl sm:text-3xl font-medium mb-2'>Hey {userData ? userData.name : 'Developer'}!
-            <img className='w-8 aspect-square' src={assets.hand_wave} alt="" />
-        </h1> */}
         <h1 className="text-[5rem] font-extrabold tracking-tight w-[55vw] z-[9] leading-[1.2] mb-2 text-zinc-800 mt-[10.5rem] font-[Alice]">
           Connecting Blood Donors with Patients in Urgent Need
         </h1>

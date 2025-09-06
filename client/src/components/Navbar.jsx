@@ -29,6 +29,14 @@ const Navbar = ({ scrollToSection }) => {
       );
 
       data.success ? toast.success(data.message) : toast.error(data.message);
+    // try {
+    //   const { data } = await axios.post(`${backendUrl}/api/auth/send-verify-otp`);
+    //   if (data.success) {
+    //     toast.success(data.message);
+    //     navigate('/email-verify');
+    //   } else {
+    //     toast.error(data.message);
+    //   }
     } catch (error) {
       toast.error(error.message);
     }
@@ -52,6 +60,27 @@ const Navbar = ({ scrollToSection }) => {
           <div className="cursor-pointer flex justify-center items-center gap-3" onClick={() => scrollToSection("home")}>
             <img src={logo} alt="" className='w-[2.5rem] h-[2.5rem] object-cover' />
             <h1 className="text-3xl">LifeLine</h1>
+    {/* <div className='w-full flex justify-between items-center p-2 sm:p-3 sm:px-24 sticky top-0 z-50 bg-white shadow-sm border-b border-gray-200'>
+
+        {!hideLogo && <img src={assets.logo} alt="" className='w-24 sm:w-28' />}
+
+        {userData ? 
+        <div className='w-8 h-8 flex justify-center items-center rounded-full bg-black text-white relative group ml-auto'>
+          {userData.name?.[0]?.toUpperCase() || 'U'}
+          <div className='absolute hidden group-hover:block top-0 right-0 z-10 text-black rounded pt-10'>
+            <ul className='list-none m-0 p-2 bg-gray-100 text-sm shadow-lg border'>
+              {!userData.isAccountVerified && <li>
+                  <button onClick={sendVerificationOtp} className='py-1 px-2 hover:bg-gray-200 w-full text-left'>
+                    Verify email
+                  </button>
+                </li>}
+              
+              <li>
+                <button onClick={logout} className='py-1 px-2 hover:bg-gray-200 w-full text-left pr-10'>
+                  Logout
+                </button>
+              </li>
+            </ul> */}
           </div>
 
           <div className="Links flex gap-6 text-xl">
