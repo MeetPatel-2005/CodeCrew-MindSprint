@@ -33,12 +33,7 @@ const Login = () => {
         {
           setIsLoggedIn(true)
           await getUserData()
-          // Show success message if provided
-          if (data.message) {
-            toast.success(data.message)
-          }
-          // For new signups, always go to email verification first
-          navigate('/email-verify')
+          navigate(role === 'donor' ? '/donor-dashboard' : '/patient-dashboard')
         }
         else
         {
@@ -53,17 +48,8 @@ const Login = () => {
         {
           setIsLoggedIn(true)
           const roleFromLogin = data.role
-          const userDataResponse = await getUserData()
-          // For login, check if already verified and redirect accordingly
-          if (userDataResponse?.isAccountVerified) {
-            if (roleFromLogin === 'donor') {
-              navigate('/donor-dashboard')
-            } else {
-              navigate('/patient-dashboard')
-            }
-          } else {
-            navigate('/email-verify')
-          }
+          await getUserData()
+          navigate(roleFromLogin === 'donor' ? '/donor-dashboard' : '/patient-dashboard')
         }
         else
         {

@@ -49,12 +49,32 @@ const EmailVerify = () => {
       if(data.success)
       {
         toast.success(data.message)
-        const updatedUserData = await getUserData()
-        // Redirect based on user role and profile completion
-        if(updatedUserData?.role === 'donor') {
-          navigate('/donor-profile')
+        await getUserData()
+        const params = new URLSearchParams(window.location.search)
+        const back = params.get('back')
+        
+        if (back) {
+          navigate(`/${back}`)
         } else {
-          navigate('/patient-dashboard')
+          // Redirect based on user role and profile completion
+          const updatedUserData = await getUserData()
+          if(updatedUserData?.role === 'donor') {
+            // Check if donor profile is completed
+            try {
+              const profile = await axios.get(backendUrl + '/api/donor/profile')
+              if (profile.data?.success && profile.data?.profile?.profileCompleted) {
+                navigate('/donor-dashboard')
+              } else {
+                navigate('/donor-profile')
+              }
+            } catch (err) {
+              navigate('/donor-profile')
+            }
+          } else {
+            // Check if patient profile is completed
+            const needsOnboarding = !updatedUserData.phone || !updatedUserData.bloodGroup
+            navigate(needsOnboarding ? '/patient-onboarding' : '/patient-dashboard')
+          }
         }
       }
       else
