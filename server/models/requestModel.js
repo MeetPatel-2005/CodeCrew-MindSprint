@@ -9,7 +9,9 @@ const requestSchema = new mongoose.Schema({
     distanceKm: { type: Number, default: 1.0 },
     createdAt: { type: Date, default: Date.now },
     status: { type: String, enum: ['open','accepted','declined','fulfilled','cancelled'], default: 'open' },
-    acceptedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'user', default: null }
+    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'user', required: true },
+    acceptedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'user', default: null },
+    additionalInfo: { type: String, default: '' }
 });
 
 const requestModel = mongoose.models.request || mongoose.model('request', requestSchema);

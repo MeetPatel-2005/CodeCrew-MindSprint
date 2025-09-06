@@ -12,6 +12,7 @@ const DonorDashboard = () => {
   const [donorInfo, setDonorInfo] = useState({ name: '', bloodGroup: '', lastDonation: '', totalDonations: 0, phone: '' })
   const [nearbyRequests, setNearbyRequests] = useState([])
   const [donationHistory, setDonationHistory] = useState([])
+  const [acceptedRequests, setAcceptedRequests] = useState([])
   const navigate = useNavigate()  
   const urgencyClass = useMemo(() => ({
     Critical: 'bg-red-600 text-white',
@@ -25,11 +26,12 @@ const DonorDashboard = () => {
       setLoading(true)
       const { data } = await axios.get(`${backendUrl}/api/donor/dashboard`)
       if (!data.success) return toast.error(data.message || 'Failed to load dashboard')
-      const { donorInfo, isAvailable, nearbyRequests, donationHistory } = data.data
+      const { donorInfo, isAvailable, nearbyRequests, donationHistory, acceptedRequests } = data.data
       setDonorInfo(donorInfo)
       setIsAvailable(isAvailable)
       setNearbyRequests(nearbyRequests)
       setDonationHistory(donationHistory)
+      setAcceptedRequests(acceptedRequests || [])
     } catch (err) {
       toast.error(err.message)
     } finally {
@@ -100,7 +102,7 @@ const DonorDashboard = () => {
 
   return (
     <div className='min-h-screen bg-white'>
-     
+      <Navbar />
       <div className='max-w-6xl mx-auto px-4 py-6'>
         {loading ? (
           <div className='text-center py-20'>Loading...</div>
@@ -154,10 +156,13 @@ const DonorDashboard = () => {
                           <div className='w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-600 font-semibold'>
                             B
                           </div>
-                          <div>
-                            <p className='font-medium'>{request.patientName}</p>
-                            <p className='text-sm text-gray-500'>{request.hospital}</p>
-                          </div>
+                           <div>
+                             <p className='font-medium'>{request.patientName}</p>
+                             <p className='text-sm text-gray-500'>{request.hospital}</p>
+                             {request.additionalInfo && (
+                               <p className='text-xs text-gray-400 mt-1'>{request.additionalInfo}</p>
+                             )}
+                           </div>
                         </div>
                         <span className={`text-xs px-2 py-1 rounded ${urgencyClass[request.urgency] || 'bg-gray-100 text-gray-700'}`}>{request.urgency}</span>
                       </div>
@@ -217,6 +222,35 @@ const DonorDashboard = () => {
                   <div className='flex items-center gap-2'><span className='text-gray-500'>Name:</span> <span>{donorInfo.name}</span></div>
                   <div className='flex items-center gap-2'><span className='text-gray-500'>Phone:</span> <span>{donorInfo.phone || '—'}</span></div>
                   <div className='flex items-center gap-2'><span className='text-gray-500'>Blood Group:</span> <span>{donorInfo.bloodGroup}</span></div>
+                </div>
+              </div>
+
+              <div className='bg-white border rounded-xl'>
+                <div className='border-b px-6 py-4 flex items-center gap-2'>
+                  <h3 className='font-semibold'>Accepted Requests</h3>
+                </div>
+                <div className='px-6 py-4 space-y-3 text-sm'>
+                  {acceptedRequests.length === 0 && <div className='text-gray-500'>No accepted requests yet.</div>}
+                  {acceptedRequests.map((request) => (
+                    <div key={request._id} className='border rounded-lg p-3 space-y-2'>
+                      <div className='flex items-center justify-between'>
+                        <div>
+                          <p className='font-medium text-sm'>{request.hospital}</p>
+                          <p className='text-xs text-gray-500'>{request.bloodGroup} - {request.unitsNeeded} units</p>
+                        </div>
+                        <span className='px-2 py-1 rounded bg-green-50 text-green-700 text-xs'>
+                          Accepted
+                        </span>
+                      </div>
+                      {request.patientContact && (
+                        <div className='text-xs text-gray-600'>
+                          <span className='font-medium'>Patient:</span> {request.patientContact.name}
+                          <br />
+                          <span className='font-medium'>Contact:</span> {request.patientContact.phone || 'Not provided'}
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </div>
 

@@ -7,6 +7,7 @@ import connectDB from "./config/mongodb.js";
 import authRouter from "./routes/authRoutes.js";
 import userRouter from "./routes/userRoutes.js";
 import donorRouter from "./routes/donorRoutes.js";
+import patientRouter from "./routes/patientRoutes.js";
 
 const app = express();
 const port = process.env.PORT || 4000;
@@ -36,6 +37,7 @@ app.get("/", (req, res) => {
 app.use("/api/auth", authRouter);
 app.use("/api/user", userRouter);
 app.use("/api/donor", donorRouter);
+app.use("/api/patient", patientRouter);
 
 app.listen(port, () => {
     console.log(`Server started on PORT : ${port}`);

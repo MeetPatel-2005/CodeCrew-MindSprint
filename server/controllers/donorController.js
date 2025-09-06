@@ -84,41 +84,13 @@ export const getDonorDashboard = async (req, res) => {
             return res.json({ success: false, message: 'Please complete your profile first' });
         }
 
-        // Seed a few demo requests if DB empty (dev convenience)
-        const totalRequests = await requestModel.countDocuments();
-        if (totalRequests === 0) {
-            const seed = [
-                { patientName: 'Emergency Patient #1247', bloodGroup: user.bloodGroup, unitsNeeded: 2, urgency: 'Critical', hospital: 'City General Hospital', distanceKm: 1.2 },
-                { patientName: 'Emergency Patient #1248', bloodGroup: user.bloodGroup, unitsNeeded: 1, urgency: 'High', hospital: 'Medical Center East', distanceKm: 2.8 },
-                { patientName: 'Emergency Patient #1249', bloodGroup: user.bloodGroup, unitsNeeded: 3, urgency: 'Medium', hospital: 'Regional Hospital', distanceKm: 4.1 }
-            ];
-            await requestModel.insertMany(seed);
-        }
-
-        // Always add a test request for the current user's blood group if none exist
-        const userRequests = await requestModel.find({
-            bloodGroup: user.bloodGroup,
-            status: 'open'
-        });
-        
-        if (userRequests.length === 0) {
-            const testRequest = new requestModel({
-                patientName: 'Test Patient #9999',
-                bloodGroup: user.bloodGroup,
-                unitsNeeded: 1,
-                urgency: 'High',
-                hospital: 'Test Hospital',
-                distanceKm: 0.5,
-                status: 'open'
-            });
-            await testRequest.save();
-        }
+        // No dummy requests - only show real requests from patients
 
         // Nearby open requests for donor's blood group
         const requests = await requestModel.find({
             bloodGroup: user.bloodGroup,
             status: 'open'
-        }).sort({ createdAt: -1 }).limit(10);
+        }).populate('createdBy', 'name phone').sort({ createdAt: -1 }).limit(10);
 
         // Build response structures matching frontend needs
         const donorInfo = {
@@ -137,10 +109,32 @@ export const getDonorDashboard = async (req, res) => {
             urgency: r.urgency,
             hospital: r.hospital,
             distance: `${r.distanceKm?.toFixed(1) || '1.0'} km`,
-            timeAgo: timeAgo(r.createdAt)
+            timeAgo: timeAgo(r.createdAt),
+            additionalInfo: r.additionalInfo,
+            patientContact: r.createdBy ? {
+                name: r.createdBy.name,
+                phone: r.createdBy.phone
+            } : null
         }));
 
         const donationHistory = buildDonationHistory(user);
+
+        // Get accepted requests by this donor
+        const acceptedRequests = await requestModel.find({
+            acceptedBy: user._id,
+            status: 'accepted'
+        }).populate('createdBy', 'name phone').sort({ createdAt: -1 }).limit(5);
+
+        const acceptedRequestsData = acceptedRequests.map((r) => ({
+            _id: r._id,
+            hospital: r.hospital,
+            bloodGroup: r.bloodGroup,
+            unitsNeeded: r.unitsNeeded,
+            patientContact: r.createdBy ? {
+                name: r.createdBy.name,
+                phone: r.createdBy.phone
+            } : null
+        }));
 
         return res.json({
             success: true,
@@ -148,7 +142,8 @@ export const getDonorDashboard = async (req, res) => {
                 donorInfo,
                 isAvailable: user.isAvailable,
                 nearbyRequests,
-                donationHistory
+                donationHistory,
+                acceptedRequests: acceptedRequestsData
             }
         });
     } catch (error) {

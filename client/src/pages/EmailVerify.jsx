@@ -49,12 +49,12 @@ const EmailVerify = () => {
       if(data.success)
       {
         toast.success(data.message)
-        getUserData()
+        const updatedUserData = await getUserData()
         // Redirect based on user role and profile completion
-        if(userData?.role === 'donor') {
+        if(updatedUserData?.role === 'donor') {
           navigate('/donor-profile')
         } else {
-          navigate('/')
+          navigate('/patient-dashboard')
         }
       }
       else
