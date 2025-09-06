@@ -32,60 +32,6 @@ const userSchema = new mongoose.Schema({
         enum: ['donor', 'patient'],
         default: 'patient'
     },
-    // --- Donor Profile Fields ---
-    bloodGroup: {
-        type: String,
-        enum: ['A+','A-','B+','B-','AB+','AB-','O+','O-', ''],
-        default: ''
-    },
-    phone: {
-        type: String,
-        default: ''
-    },
-    dateOfBirth: {
-        type: Date,
-        default: null
-    },
-    gender: {
-        type: String,
-        enum: ['Male', 'Female', 'Other', ''],
-        default: ''
-    },
-    address: {
-        street: { type: String, default: '' },
-        city: { type: String, default: '' },
-        state: { type: String, default: '' },
-        zipCode: { type: String, default: '' },
-        country: { type: String, default: '' }
-    },
-    emergencyContact: {
-        name: { type: String, default: '' },
-        phone: { type: String, default: '' },
-        relationship: { type: String, default: '' }
-    },
-    medicalInfo: {
-        weight: { type: Number, default: null },
-        height: { type: Number, default: null },
-        hasMedicalConditions: { type: Boolean, default: false },
-        medicalConditions: { type: String, default: '' },
-        medications: { type: String, default: '' }
-    },
-    isAvailable: {
-        type: Boolean,
-        default: true
-    },
-    totalDonations: {
-        type: Number,
-        default: 0
-    },
-    lastDonationAt: {
-        type: Date,
-        default: null
-    },
-    profileCompleted: {
-        type: Boolean,
-        default: false
-    },
     resetOtp: {        // ---> OTP for reset password
         type: String,
         default: ''
