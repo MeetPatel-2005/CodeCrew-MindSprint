@@ -11,12 +11,17 @@ import "../index.css";
 const Navbar = ({ scrollToSection }) => {
   const navigate = useNavigate();
 
-  const { userData, backendUrl, setUserData, setIsLoggedIn } =
-    useContext(AppContent);
+  const context = useContext(AppContent);
+  const { userData, backendUrl, setUserData, setIsLoggedIn } = context || {};
 
   const sendVerificationOtp = async () => {
     if (!userData || !userData.email) {
       toast.error("Please wait, loading your data...");
+      return;
+    }
+
+    if (!backendUrl) {
+      toast.error("Service temporarily unavailable");
       return;
     }
 
@@ -29,14 +34,6 @@ const Navbar = ({ scrollToSection }) => {
       );
 
       data.success ? toast.success(data.message) : toast.error(data.message);
-    // try {
-    //   const { data } = await axios.post(`${backendUrl}/api/auth/send-verify-otp`);
-    //   if (data.success) {
-    //     toast.success(data.message);
-    //     navigate('/email-verify');
-    //   } else {
-    //     toast.error(data.message);
-    //   }
     } catch (error) {
       toast.error(error.message);
     }
@@ -44,12 +41,22 @@ const Navbar = ({ scrollToSection }) => {
 
   const logout = async () => {
     try {
+      if (!backendUrl) {
+        console.error('Backend URL not available');
+        return;
+      }
       const { data } = await axios.post(backendUrl + "/api/auth/logout");
-      data.success && setIsLoggedIn(false);
-      data.success && setUserData(false);
-      navigate("/");
+      if (data.success) {
+        setIsLoggedIn?.(false);
+        setUserData?.(null);
+        navigate("/");
+      }
     } catch (error) {
-      toast.error(error.message);
+      console.error('Logout error:', error);
+      // Still navigate to home even if logout fails
+      setIsLoggedIn?.(false);
+      setUserData?.(null);
+      navigate("/");
     }
   };
 

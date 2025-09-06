@@ -79,14 +79,14 @@ export const getDonorDashboard = async (req, res) => {
             return res.json({ success: false, message: 'Donor not found or not a donor' });
         }
 
-        // Check if profile is completed
-        if (!user.profileCompleted) {
-            return res.json({ success: false, message: 'Please complete your profile first' });
-        }
+        // Check if profile is completed - but don't block dashboard access
+        // if (!user.profileCompleted) {
+        //     return res.json({ success: false, message: 'Please complete your profile first' });
+        // }
 
         // No dummy data - only show real requests from database
 
-        // Nearby open requests for donor's blood group
+        // Nearby active requests for donor's blood group
         const requests = await bloodRequestModel.find({
             bloodGroup: user.bloodGroup,
             status: 'active'
@@ -109,10 +109,30 @@ export const getDonorDashboard = async (req, res) => {
             urgency: r.urgency,
             hospital: r.hospitalName,
             distance: '1.0 km', // Default distance since we don't have coordinates yet
-            timeAgo: timeAgo(r.createdAt)
+            timeAgo: timeAgo(r.createdAt),
+            additionalInfo: r.notes || ''
         }));
 
         const donationHistory = buildDonationHistory(user);
+
+        // Get accepted requests by this donor
+        const acceptedRequests = await bloodRequestModel.find({
+            'acceptedDonors.donorId': user._id,
+            status: 'active'
+        }).populate('patientId', 'name phone bloodGroup').sort({ createdAt: -1 }).limit(5);
+
+        const acceptedRequestsData = acceptedRequests.map((r) => ({
+            requestId: r._id,
+            patientId: r.patientId._id,
+            patientName: r.patientId.name,
+            patientBloodGroup: r.patientId.bloodGroup,
+            patientPhone: r.patientId.phone,
+            bloodGroup: r.bloodGroup,
+            unitsNeeded: r.unitsNeeded,
+            urgency: r.urgency,
+            hospitalName: r.hospitalName,
+            acceptedAt: r.acceptedDonors.find(d => d.donorId.toString() === user._id.toString())?.acceptedAt
+        }));
 
         return res.json({
             success: true,
@@ -120,7 +140,8 @@ export const getDonorDashboard = async (req, res) => {
                 donorInfo,
                 isAvailable: user.isAvailable,
                 nearbyRequests,
-                donationHistory
+                donationHistory,
+                acceptedRequests: acceptedRequestsData
             }
         });
     } catch (error) {
@@ -163,23 +184,29 @@ export const acceptRequest = async (req, res) => {
             return res.json({ success: false, message: 'Request not available' });
         }
         
+        // Check if donor already accepted this request
+        const alreadyAccepted = reqDoc.acceptedDonors.some(
+            donor => donor.donorId.toString() === userId.toString()
+        );
+        
+        if (alreadyAccepted) {
+            return res.json({ success: false, message: 'You have already accepted this request' });
+        }
+        
         // Add donor to accepted donors list
         await reqDoc.addDonor(userId, 'Accepted via donor dashboard');
         
         console.log('Added donor to request. Updated request:', reqDoc);
         
-        // Update donor's stats
-        user.totalDonations += 1;
-        user.lastDonationAt = new Date();
-        await user.save();
+        // Don't update donation count here - only when actually donating
+        // user.totalDonations += 1;
+        // user.lastDonationAt = new Date();
+        // await user.save();
         
         return res.json({ 
             success: true, 
-            message: 'Request accepted! Your donation count has been updated.',
-            newStats: {
-                totalDonations: user.totalDonations,
-                lastDonationAt: user.lastDonationAt
-            }
+            message: 'Request accepted successfully! You can now chat with the patient.',
+            requestId: reqDoc._id
         });
     } catch (error) {
         console.error('Error in acceptRequest:', error);

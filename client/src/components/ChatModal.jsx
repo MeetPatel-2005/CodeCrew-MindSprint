@@ -18,7 +18,9 @@ const ChatModal = ({ isOpen, onClose, donorId, donorName, donorBloodGroup, donor
   const roomId = React.useMemo(() => {
     if (!userData?._id || !donorId) return null
     const ids = [userData._id, donorId].sort()
-    return `${ids[0]}_${ids[1]}`
+    const room = `${ids[0]}_${ids[1]}`
+    console.log('Patient room ID:', room, 'User ID:', userData._id, 'Donor ID:', donorId)
+    return room
   }, [userData?._id, donorId])
 
   // Load messages from localStorage on mount
@@ -48,10 +50,15 @@ const ChatModal = ({ isOpen, onClose, donorId, donorName, donorBloodGroup, donor
   useEffect(() => {
     if (isOpen && roomId) {
       // Extract the base URL without /api
-      let baseUrl = backendUrl.replace('/api', '')
+      let baseUrl = backendUrl
       
-      // Fallback to localhost if backendUrl is not set
-      if (!baseUrl || baseUrl === 'undefined' || baseUrl === 'null') {
+      // Handle different backend URL formats
+      if (baseUrl && baseUrl.includes('/api')) {
+        baseUrl = baseUrl.replace('/api', '')
+      }
+      
+      // Fallback to localhost if backendUrl is not set or invalid
+      if (!baseUrl || baseUrl === 'undefined' || baseUrl === 'null' || baseUrl === '') {
         baseUrl = 'http://localhost:4000'
         console.warn('Backend URL not set, using fallback:', baseUrl)
       }
@@ -60,44 +67,59 @@ const ChatModal = ({ isOpen, onClose, donorId, donorName, donorBloodGroup, donor
       console.log('Connecting to Socket.IO server at:', baseUrl)
       console.log('Room ID:', roomId)
       
+      // Disconnect existing socket if any
+      if (socket) {
+        socket.disconnect()
+        setSocket(null)
+      }
+      
       let newSocket = null
       
       try {
         newSocket = io(baseUrl, {
           withCredentials: true,
           transports: ['websocket', 'polling'],
-          timeout: 20000,
-          forceNew: true
+          timeout: 10000,
+          forceNew: true,
+          autoConnect: true
         })
+        
+        console.log('Socket created:', !!newSocket)
       } catch (error) {
         console.error('Failed to create socket connection:', error)
-        toast.info('Starting in offline mode - chat will work without live connection')
+        toast.error('Failed to connect to chat server')
       }
 
       if (newSocket) {
+        // Set up connection timeout
+        const connectionTimeout = setTimeout(() => {
+          if (!newSocket.connected) {
+            console.log('⚠️ Socket connection timeout, retrying...')
+            newSocket.connect()
+          }
+        }, 5000)
+
         newSocket.on('connect', () => {
-          console.log('Connected to chat server')
+          console.log('✅ Patient connected to chat server')
+          clearTimeout(connectionTimeout)
           setIsConnected(true)
           newSocket.emit('join-room', roomId)
-          toast.success('Live chat connected!')
+          console.log('✅ Patient joined room:', roomId)
         })
 
         newSocket.on('room-joined', (data) => {
-          console.log('Successfully joined room:', data.roomId)
-          // Don't show toast for room joining to avoid spam
+          console.log('✅ Patient successfully joined room:', data.roomId)
         })
 
         newSocket.on('disconnect', () => {
-          console.log('Disconnected from chat server')
+          console.log('❌ Patient disconnected from chat server')
           setIsConnected(false)
-          toast.info('Switched to offline mode - messages will sync when connected')
         })
 
         newSocket.on('receive-message', (data) => {
-          console.log('Received message:', data)
+          console.log('📨 Patient received message:', data)
           setMessages(prev => [...prev, data])
           scrollToBottom()
-          toast.info(`New message from ${data.senderName}`)
         })
 
         newSocket.on('user-typing', (data) => {
@@ -113,27 +135,26 @@ const ChatModal = ({ isOpen, onClose, donorId, donorName, donorBloodGroup, donor
         })
 
         newSocket.on('connect_error', (error) => {
-          console.error('Socket connection error:', error)
-          toast.info('Starting in offline mode - chat will work without live connection')
+          console.error('❌ Patient socket connection error:', error)
           setIsConnected(false)
+          clearTimeout(connectionTimeout)
         })
 
         newSocket.on('error', (error) => {
-          console.error('Socket error:', error)
-          toast.info('Socket error - continuing in offline mode')
+          console.error('❌ Patient socket error:', error)
         })
 
         setSocket(newSocket)
 
         return () => {
+          clearTimeout(connectionTimeout)
           if (newSocket) {
             newSocket.disconnect()
           }
         }
       } else {
-        // If socket creation failed, just set connected to false and continue
+        console.log('❌ Failed to create socket for patient')
         setIsConnected(false)
-        toast.info('Starting in offline mode - chat will work without live connection')
       }
     }
   }, [isOpen, roomId, backendUrl])
@@ -162,26 +183,28 @@ const ChatModal = ({ isOpen, onClose, donorId, donorName, donorBloodGroup, donor
       timestamp: new Date()
     }
 
-    console.log('Sending message:', messageData)
+    console.log('Patient sending message:', messageData)
+    console.log('Socket connected:', !!socket)
+    console.log('Is connected:', isConnected)
     
     // Always add message to local state immediately for better UX
     setMessages(prev => [...prev, messageData])
     setNewMessage('')
     scrollToBottom()
     
-    // Try to send via socket if connected, but don't block if not
-    if (socket && isConnected) {
+    // Try to send via socket
+    if (socket) {
       try {
         socket.emit('send-message', messageData)
         socket.emit('typing', { roomId, isTyping: false, userName: userData.name })
+        console.log('Message sent via socket successfully')
         toast.success('Message sent!')
       } catch (error) {
         console.error('Error sending via socket:', error)
         toast.info('Message saved locally (will sync when connected)')
       }
     } else {
-      // Store message locally for when connection is restored
-      console.log('Socket not connected, storing message locally')
+      console.log('Socket not available, storing message locally')
       toast.info('Message saved locally (will sync when connected)')
     }
   }

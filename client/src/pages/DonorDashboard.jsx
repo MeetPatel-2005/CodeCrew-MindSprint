@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState, useMemo } from 'react'
 import { AppContent } from '../context/AppContext'
 import DonorChatModal from '../components/DonorChatModal'
 import axios from 'axios'
@@ -7,11 +7,19 @@ import { useNavigate } from 'react-router-dom'
 
 const DonorDashboard = () => {
   const { backendUrl, userData, getUserData, setIsLoggedIn, setUserData } = useContext(AppContent)
-  const navigate = useNavigate()
   const [isAvailable, setIsAvailable] = useState(true)
   const [nearbyRequests, setNearbyRequests] = useState([])
   const [donationHistory, setDonationHistory] = useState([])
   const [acceptedRequests, setAcceptedRequests] = useState([])
+
+  const navigate = useNavigate()  
+  const urgencyClass = useMemo(() => ({
+    Critical: 'bg-red-600 text-white',
+    High: 'bg-orange-500 text-white',
+    Medium: 'bg-gray-200 text-gray-800',
+    Low: 'bg-gray-100 text-gray-700'
+  }), [])
+
   const [loading, setLoading] = useState(true)
   const [chatModal, setChatModal] = useState({ isOpen: false, patientId: null, patientName: '', patientBloodGroup: '' })
   const [acceptedRequestIds, setAcceptedRequestIds] = useState(new Set())
@@ -34,27 +42,36 @@ const DonorDashboard = () => {
   const fetchData = async () => {
     try {
       setLoading(true)
-      
+
       // Fetch real data from API
       const response = await axios.get(`${backendUrl}/api/donor/dashboard`)
       
       if (response.data.success) {
-        const { donorInfo, nearbyRequests, donationHistory } = response.data.data
+        const { donorInfo, isAvailable, nearbyRequests, donationHistory, acceptedRequests } = response.data.data
+        setIsAvailable(isAvailable)
         setNearbyRequests(nearbyRequests || [])
         setDonationHistory(donationHistory || [])
+        setAcceptedRequests(acceptedRequests || [])
       } else {
-        toast.error(response.data.message)
+        console.log('Dashboard response:', response.data)
+        // Don't show error toast for profile completion - just show empty state
+        if (!response.data.message.includes('complete your profile')) {
+          toast.error(response.data.message)
+        }
         setNearbyRequests([])
         setDonationHistory([])
+        setAcceptedRequests([])
       }
       
       // Fetch accepted requests for chat
       await fetchAcceptedRequests()
+
     } catch (err) {
       console.error('Error fetching data:', err)
       toast.error('Failed to load dashboard data')
       setNearbyRequests([])
       setDonationHistory([])
+      setAcceptedRequests([])
     } finally {
       setLoading(false)
     }
@@ -112,6 +129,9 @@ const DonorDashboard = () => {
           
           // Remove from nearby requests
           setNearbyRequests(prev => prev.filter(req => req.id !== requestId))
+          
+          // Refresh the entire dashboard to get updated data
+          await fetchData()
         } else {
           toast.error(response.data.message)
         }
@@ -199,6 +219,7 @@ const DonorDashboard = () => {
       </div>
 
       <div className="max-w-6xl mx-auto px-4 py-8">
+
         {loading ? (
           <div className="text-center py-20">Loading...</div>
         ) : (
@@ -298,103 +319,112 @@ const DonorDashboard = () => {
                   {nearbyRequests.length === 0 && (
                     <div className="text-sm text-gray-500">No nearby requests right now.</div>
                   )}
-                  {nearbyRequests.map((request) => (
-                    <div key={request.id} className={`border-2 rounded-lg p-4 space-y-3 transition-all duration-500 ${
-                      recentlyAccepted.has(request.id) 
-                        ? 'border-green-500 bg-green-50 shadow-lg scale-105' 
-                        : 'border-gray-300'
-                    }`}>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-3">
-                          <div className="flex items-center justify-center w-10 h-10 bg-red-100 rounded-full">
-                            <svg className="h-5 w-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                            </svg>
+                  {nearbyRequests.map((request) => {
+                    // Check if this request is already accepted by this donor
+                    const isAccepted = acceptedRequests.some(acc => acc.requestId === request.id) || 
+                                     acceptedRequestIds.has(request.id);
+                    
+                    return (
+                      <div key={request.id} className={`border-2 rounded-lg p-4 space-y-3 transition-all duration-500 ${
+                        recentlyAccepted.has(request.id) 
+                          ? 'border-green-500 bg-green-50 shadow-lg scale-105' 
+                          : 'border-gray-300'
+                      }`}>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-3">
+                            <div className="flex items-center justify-center w-10 h-10 bg-red-100 rounded-full">
+                              <svg className="h-5 w-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                              </svg>
+                            </div>
+                            <div>
+                              <p className="font-medium">{request.patientName}</p>
+                              <p className="text-sm text-gray-500">{request.hospital}</p>
+                              {request.additionalInfo && (
+                                <p className="text-xs text-gray-400 mt-1">{request.additionalInfo}</p>
+                              )}
+                            </div>
+                          </div>
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getUrgencyColor(request.urgency)}`}>
+                            {request.urgency}
+                          </span>
+                        </div>
+                        
+                        <div className="grid grid-cols-3 gap-4 text-sm">
+                          <div>
+                            <span className="text-gray-500">Blood Type:</span>
+                            <p className="font-medium">{request.bloodGroup}</p>
                           </div>
                           <div>
-                            <p className="font-medium">{request.patientName}</p>
-                            <p className="text-sm text-gray-500">{request.hospital}</p>
+                            <span className="text-gray-500">Units Needed:</span>
+                            <p className="font-medium">{request.unitsNeeded}</p>
+                          </div>
+                          <div>
+                            <span className="text-gray-500">Distance:</span>
+                            <p className="font-medium">{request.distance}</p>
                           </div>
                         </div>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getUrgencyColor(request.urgency)}`}>
-                          {request.urgency}
-                        </span>
-                      </div>
-                      
-                      <div className="grid grid-cols-3 gap-4 text-sm">
-                        <div>
-                          <span className="text-gray-500">Blood Type:</span>
-                          <p className="font-medium">{request.bloodGroup}</p>
-                        </div>
-                        <div>
-                          <span className="text-gray-500">Units Needed:</span>
-                          <p className="font-medium">{request.unitsNeeded}</p>
-                        </div>
-                        <div>
-                          <span className="text-gray-500">Distance:</span>
-                          <p className="font-medium">{request.distance}</p>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center justify-between">
-                        <p className="text-xs text-gray-500 flex items-center">
-                          <svg className="h-3 w-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                          {request.timeAgo}
-                        </p>
-                        <div className="flex space-x-2">
-                          {acceptedRequestIds.has(request.id) ? (
-                            <button 
-                              onClick={() => setChatModal({
-                                isOpen: true,
-                                patientId: request.patientId,
-                                patientName: request.patientName,
-                                patientBloodGroup: request.bloodGroup
-                              })}
-                              className="flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm relative overflow-hidden group"
-                            >
-                              {/* Animated background */}
-                              <div className="absolute inset-0 bg-blue-500 rounded animate-ping opacity-20"></div>
-                              <div className="absolute inset-0 bg-blue-400 rounded animate-pulse opacity-30"></div>
-                              
-                              {/* Button content */}
-                              <div className="relative flex items-center gap-1">
-                                <svg className="h-4 w-4 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                                </svg>
-                                <span className="font-medium">Contact</span>
-                              </div>
-                              
-                              {/* Shimmer effect */}
-                              <div className="absolute inset-0 -skew-x-12 bg-gradient-to-r from-transparent via-white to-transparent opacity-0 group-hover:opacity-20 group-hover:animate-pulse"></div>
-                            </button>
-                          ) : (
-                            <>
+                        
+                        <div className="flex items-center justify-between">
+                          <p className="text-xs text-gray-500 flex items-center">
+                            <svg className="h-3 w-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            {request.timeAgo}
+                          </p>
+                          <div className="flex space-x-2">
+                            {isAccepted ? (
                               <button 
-                                onClick={() => handleDecision(request.id, 'decline')} 
-                                className="flex items-center gap-1 border-2 border-gray-300 px-3 py-1 rounded text-sm hover:bg-gray-50"
+                                onClick={() => setChatModal({
+                                  isOpen: true,
+                                  patientId: request.patientId,
+                                  patientName: request.patientName,
+                                  patientBloodGroup: request.bloodGroup
+                                })}
+                                className="flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm relative overflow-hidden group"
                               >
-                                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                                Decline
+                                {/* Animated background */}
+                                <div className="absolute inset-0 bg-blue-500 rounded animate-ping opacity-20"></div>
+                                <div className="absolute inset-0 bg-blue-400 rounded animate-pulse opacity-30"></div>
+                                
+                                {/* Button content */}
+                                <div className="relative flex items-center gap-1">
+                                  <svg className="h-4 w-4 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                  </svg>
+                                  <span className="font-medium">Contact</span>
+                                </div>
+                                
+                                {/* Shimmer effect */}
+                                <div className="absolute inset-0 -skew-x-12 bg-gradient-to-r from-transparent via-white to-transparent opacity-0 group-hover:opacity-20 group-hover:animate-pulse"></div>
                               </button>
-                              <button 
-                                onClick={() => handleDecision(request.id, 'accept')} 
-                                className="flex items-center gap-1 bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm"
-                              >
-                                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                </svg>
-                                Accept
-                              </button>
-                            </>
-                          )}
+                            ) : (
+                              <>
+                                <button 
+                                  onClick={() => handleDecision(request.id, 'decline')} 
+                                  className="flex items-center gap-1 border-2 border-gray-300 px-3 py-1 rounded text-sm hover:bg-gray-50"
+                                >
+                                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                  </svg>
+                                  Decline
+                                </button>
+                                <button 
+                                  onClick={() => handleDecision(request.id, 'accept')} 
+                                  className="flex items-center gap-1 bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm"
+                                >
+                                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                  </svg>
+                                  Accept
+                                </button>
+                              </>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             </div>

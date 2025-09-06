@@ -4,7 +4,7 @@ import { AppContent } from '../context/AppContext'
 import axios from 'axios'
 import { toast } from 'react-toastify'
 
-const ContactModal = ({ isOpen, onClose, donorId, donorName, donorBloodGroup, onStartChat }) => {
+const ContactModal = ({ isOpen, onClose, donorId, donorName, donorBloodGroup, onStartChat, isRequestAccepted = false }) => {
   const { backendUrl, userData } = React.useContext(AppContent)
   const [donorDetails, setDonorDetails] = useState(null)
   const [loading, setLoading] = useState(false)
@@ -79,75 +79,116 @@ const ContactModal = ({ isOpen, onClose, donorId, donorName, donorBloodGroup, on
                 <label className="text-sm font-medium text-gray-500">Blood Group</label>
                 <p className="text-gray-900">{donorDetails.bloodGroup}</p>
               </div>
-              <div>
-                <label className="text-sm font-medium text-gray-500">Phone</label>
-                <p className="text-gray-900">{donorDetails.phone || 'Not provided'}</p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-500">Location</label>
-                <p className="text-gray-900">{donorDetails.location || 'Not provided'}</p>
-              </div>
-              {donorDetails.address && (
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Address</label>
-                  <p className="text-gray-900">
-                    {donorDetails.address.street && `${donorDetails.address.street}, `}
-                    {donorDetails.address.city && `${donorDetails.address.city}, `}
-                    {donorDetails.address.state && `${donorDetails.address.state}`}
-                  </p>
-                </div>
+              
+              {/* Show limited info if request not accepted */}
+              {!isRequestAccepted ? (
+                <>
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                    <div className="flex items-center">
+                      <svg className="h-5 w-5 text-yellow-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                      </svg>
+                      <p className="text-yellow-800 text-sm">
+                        <strong>Limited Access:</strong> Full contact details will be available after the donor accepts your request.
+                      </p>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Availability</label>
+                    <p className={`font-medium ${donorDetails.isAvailable ? 'text-green-600' : 'text-red-600'}`}>
+                      {donorDetails.isAvailable ? 'Available' : 'Not Available'}
+                    </p>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Phone</label>
+                    <p className="text-gray-900">{donorDetails.phone || 'Not provided'}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Location</label>
+                    <p className="text-gray-900">{donorDetails.location || 'Not provided'}</p>
+                  </div>
+                  {donorDetails.address && (
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Address</label>
+                      <p className="text-gray-900">
+                        {donorDetails.address.street && `${donorDetails.address.street}, `}
+                        {donorDetails.address.city && `${donorDetails.address.city}, `}
+                        {donorDetails.address.state && `${donorDetails.address.state}`}
+                      </p>
+                    </div>
+                  )}
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Total Donations</label>
+                    <p className="text-gray-900">{donorDetails.totalDonations || 0}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Last Donation</label>
+                    <p className="text-gray-900">
+                      {donorDetails.lastDonationAt ? 
+                        new Date(donorDetails.lastDonationAt).toLocaleDateString() : 
+                        'Never'
+                      }
+                    </p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Availability</label>
+                    <p className={`font-medium ${donorDetails.isAvailable ? 'text-green-600' : 'text-red-600'}`}>
+                      {donorDetails.isAvailable ? 'Available' : 'Not Available'}
+                    </p>
+                  </div>
+                </>
               )}
-              <div>
-                <label className="text-sm font-medium text-gray-500">Total Donations</label>
-                <p className="text-gray-900">{donorDetails.totalDonations || 0}</p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-500">Last Donation</label>
-                <p className="text-gray-900">
-                  {donorDetails.lastDonationAt ? 
-                    new Date(donorDetails.lastDonationAt).toLocaleDateString() : 
-                    'Never'
-                  }
-                </p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-500">Availability</label>
-                <p className={`font-medium ${donorDetails.isAvailable ? 'text-green-600' : 'text-red-600'}`}>
-                  {donorDetails.isAvailable ? 'Available' : 'Not Available'}
-                </p>
-              </div>
             </div>
           ) : (
             <div className="text-center py-8 text-gray-500">Failed to load donor details</div>
           )}
         </div>
 
-        {/* Chat Button */}
-        <div className="border-t p-6">
-          <button
-            onClick={handleStartChat}
-            className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-4 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 relative overflow-hidden group"
-          >
-            {/* Emergency Ring Animation */}
-            <div className="absolute inset-0 bg-green-500 rounded-lg animate-ping opacity-30"></div>
-            <div className="absolute inset-0 bg-green-400 rounded-lg animate-pulse opacity-20"></div>
-            
-            {/* Button Content */}
-            <div className="relative flex items-center justify-center space-x-2 z-10">
-              <div className="relative">
-                <svg className="w-5 h-5 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                </svg>
-                {/* Emergency indicator */}
-                <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+        {/* Chat Button - Only show if request is accepted */}
+        {isRequestAccepted && (
+          <div className="border-t p-6">
+            <button
+              onClick={handleStartChat}
+              className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-4 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 relative overflow-hidden group"
+            >
+              {/* Emergency Ring Animation */}
+              <div className="absolute inset-0 bg-green-500 rounded-lg animate-ping opacity-30"></div>
+              <div className="absolute inset-0 bg-green-400 rounded-lg animate-pulse opacity-20"></div>
+              
+              {/* Button Content */}
+              <div className="relative flex items-center justify-center space-x-2 z-10">
+                <div className="relative">
+                  <svg className="w-5 h-5 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                  </svg>
+                  {/* Emergency indicator */}
+                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+                </div>
+                <span className="font-bold">Start Emergency Chat</span>
               </div>
-              <span className="font-bold">Start Emergency Chat</span>
+              
+              {/* Shimmer effect */}
+              <div className="absolute inset-0 -skew-x-12 bg-gradient-to-r from-transparent via-white to-transparent opacity-0 group-hover:opacity-20 group-hover:animate-pulse"></div>
+            </button>
+          </div>
+        )}
+        
+        {/* Show message if request not accepted */}
+        {!isRequestAccepted && (
+          <div className="border-t p-6">
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-center">
+              <svg className="h-8 w-8 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <p className="text-gray-600 text-sm">
+                Chat will be available once the donor accepts your request
+              </p>
             </div>
-            
-            {/* Shimmer effect */}
-            <div className="absolute inset-0 -skew-x-12 bg-gradient-to-r from-transparent via-white to-transparent opacity-0 group-hover:opacity-20 group-hover:animate-pulse"></div>
-          </button>
-        </div>
+          </div>
+        )}
       </div>
     </div>
   )

@@ -20,45 +20,137 @@ const DonorChatModal = ({ isOpen, onClose, patientId, patientName, patientBloodG
   const roomId = React.useMemo(() => {
     if (!userData?._id || !patientId) return null
     const ids = [userData._id, patientId].sort()
-    return `${ids[0]}_${ids[1]}`
+    const room = `${ids[0]}_${ids[1]}`
+    console.log('Donor room ID:', room, 'User ID:', userData._id, 'Patient ID:', patientId)
+    return room
   }, [userData?._id, patientId])
 
   // Initialize socket connection
   useEffect(() => {
     if (isOpen && roomId) {
-      const newSocket = io(backendUrl.replace('/api', ''), {
-        withCredentials: true
-      })
-
-      newSocket.on('connect', () => {
-        console.log('Connected to chat server')
-        newSocket.emit('join-room', roomId)
-      })
-
-      newSocket.on('receive-message', (data) => {
-        setMessages(prev => [...prev, data])
-        scrollToBottom()
-      })
-
-      newSocket.on('user-typing', (data) => {
-        setTypingUser(data.userName)
-        setIsTyping(data.isTyping)
+      // Extract the base URL without /api
+      let baseUrl = backendUrl
+      
+      // Handle different backend URL formats
+      if (baseUrl && baseUrl.includes('/api')) {
+        baseUrl = baseUrl.replace('/api', '')
+      }
+      
+      // Fallback to localhost if backendUrl is not set or invalid
+      if (!baseUrl || baseUrl === 'undefined' || baseUrl === 'null' || baseUrl === '') {
+        baseUrl = 'http://localhost:4000'
+        console.warn('Backend URL not set, using fallback:', baseUrl)
+      }
+      
+      console.log('Donor connecting to Socket.IO server at:', baseUrl)
+      console.log('Room ID:', roomId)
+      
+      // Disconnect existing socket if any
+      if (socket) {
+        socket.disconnect()
+        setSocket(null)
+      }
+      
+      let newSocket = null
+      
+      try {
+        newSocket = io(baseUrl, {
+          withCredentials: true,
+          transports: ['websocket', 'polling'],
+          timeout: 10000,
+          forceNew: true,
+          autoConnect: true
+        })
         
-        if (data.isTyping) {
-          setTimeout(() => {
-            setIsTyping(false)
-            setTypingUser('')
-          }, 3000)
+        console.log('Donor socket created:', !!newSocket)
+      } catch (error) {
+        console.error('Failed to create socket connection:', error)
+        toast.error('Failed to connect to chat server')
+      }
+
+      if (newSocket) {
+        // Set up connection timeout
+        const connectionTimeout = setTimeout(() => {
+          if (!newSocket.connected) {
+            console.log('⚠️ Donor socket connection timeout, retrying...')
+            newSocket.connect()
+          }
+        }, 5000)
+
+        newSocket.on('connect', () => {
+          console.log('✅ Donor connected to chat server')
+          clearTimeout(connectionTimeout)
+          newSocket.emit('join-room', roomId)
+          console.log('✅ Donor joined room:', roomId)
+        })
+
+        newSocket.on('room-joined', (data) => {
+          console.log('✅ Donor successfully joined room:', data.roomId)
+        })
+
+        newSocket.on('receive-message', (data) => {
+          console.log('📨 Donor received message:', data)
+          setMessages(prev => [...prev, data])
+          scrollToBottom()
+        })
+
+        newSocket.on('user-typing', (data) => {
+          setTypingUser(data.userName)
+          setIsTyping(data.isTyping)
+          
+          if (data.isTyping) {
+            setTimeout(() => {
+              setIsTyping(false)
+              setTypingUser('')
+            }, 3000)
+          }
+        })
+
+        newSocket.on('disconnect', () => {
+          console.log('❌ Donor disconnected from chat server')
+        })
+
+        newSocket.on('connect_error', (error) => {
+          console.error('❌ Donor socket connection error:', error)
+          clearTimeout(connectionTimeout)
+        })
+
+        setSocket(newSocket)
+
+        return () => {
+          clearTimeout(connectionTimeout)
+          if (newSocket) {
+            newSocket.disconnect()
+          }
         }
-      })
-
-      setSocket(newSocket)
-
-      return () => {
-        newSocket.disconnect()
+      } else {
+        console.log('❌ Failed to create socket for donor')
       }
     }
   }, [isOpen, roomId, backendUrl])
+
+  // Load messages from localStorage on mount
+  useEffect(() => {
+    if (isOpen && roomId) {
+      const savedMessages = localStorage.getItem(`chat_${roomId}`)
+      if (savedMessages) {
+        try {
+          const parsedMessages = JSON.parse(savedMessages)
+          setMessages(parsedMessages)
+          console.log('Donor loaded saved messages:', parsedMessages)
+        } catch (error) {
+          console.error('Error loading saved messages:', error)
+        }
+      }
+    }
+  }, [isOpen, roomId])
+
+  // Save messages to localStorage whenever messages change
+  useEffect(() => {
+    if (roomId && messages.length > 0) {
+      localStorage.setItem(`chat_${roomId}`, JSON.stringify(messages))
+    }
+  }, [messages, roomId])
 
   // Fetch patient details and chat history
   useEffect(() => {
@@ -105,21 +197,43 @@ const DonorChatModal = ({ isOpen, onClose, patientId, patientName, patientBloodG
   }
 
   const sendMessage = () => {
-    if (!newMessage.trim() || !socket) return
+    if (!newMessage.trim()) {
+      toast.error('Please enter a message')
+      return
+    }
 
     const messageData = {
       roomId,
       message: newMessage.trim(),
       senderId: userData._id,
       senderName: userData.name,
-      senderRole: userData.role
+      senderRole: userData.role,
+      timestamp: new Date()
     }
 
-    socket.emit('send-message', messageData)
-    setNewMessage('')
+    console.log('Donor sending message:', messageData)
+    console.log('Socket connected:', !!socket)
     
-    // Stop typing indicator
-    socket.emit('typing', { roomId, isTyping: false, userName: userData.name })
+    // Always add message to local state immediately for better UX
+    setMessages(prev => [...prev, messageData])
+    setNewMessage('')
+    scrollToBottom()
+    
+    // Try to send via socket
+    if (socket) {
+      try {
+        socket.emit('send-message', messageData)
+        socket.emit('typing', { roomId, isTyping: false, userName: userData.name })
+        console.log('Message sent via socket successfully')
+        toast.success('Message sent!')
+      } catch (error) {
+        console.error('Error sending via socket:', error)
+        toast.info('Message saved locally (will sync when connected)')
+      }
+    } else {
+      console.log('Socket not available, storing message locally')
+      toast.info('Message saved locally (will sync when connected)')
+    }
   }
 
   const handleTyping = (e) => {

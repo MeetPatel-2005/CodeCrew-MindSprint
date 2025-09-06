@@ -32,6 +32,7 @@ const userSchema = new mongoose.Schema({
         enum: ['donor', 'patient'],
         default: 'patient'
     },
+
     phone: {              // ---> Contact number (optional)
         type: String,
         default: ''
@@ -94,6 +95,7 @@ const userSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
+
     resetOtp: {        // ---> OTP for reset password
         type: String,
         default: ''

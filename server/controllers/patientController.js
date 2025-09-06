@@ -10,13 +10,7 @@ export const createRequest = async (req, res) => {
             urgency, 
             hospitalName, 
             hospitalAddress, 
-            notes,
-            medicalCondition,
-            doctorName,
-            hospitalContact,
-            city,
-            state,
-            coordinates
+            notes
         } = req.body;
 
         // Get patient details
@@ -37,16 +31,9 @@ export const createRequest = async (req, res) => {
             urgency,
             hospitalName,
             hospitalAddress,
-            hospitalContact: hospitalContact || '',
             notes: notes || '',
-            medicalCondition: medicalCondition || '',
-            doctorName: doctorName || '',
-            city: city || patient.location || '',
-            state: state || '',
-            location: coordinates ? {
-                type: 'Point',
-                coordinates: coordinates
-            } : undefined,
+            city: patient.location || '',
+            state: '',
             totalRequiredDonors: unitsNeeded
         });
 
@@ -303,5 +290,7 @@ export const getAcceptedDonors = async (req, res) => {
         return res.json({ success: false, message: error.message });
     }
 }
+
+
 
 
