@@ -1,15 +1,143 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import "../index.css";
 import b1 from "../assets/b1.jpg";
 import b2 from "../assets/b2.jpg";
 import b3 from "../assets/b3.jpg";
 import arrow from "../assets/arrow_icon.svg";
 
+// Register ScrollTrigger plugin
+gsap.registerPlugin(ScrollTrigger);
+
 const About = () => {
+  // Refs for animation elements
+  const titleRef = useRef(null);
+  const section1Ref = useRef(null);
+  const section2Ref = useRef(null);
+  const section3Ref = useRef(null);
+  const decorativeLineRef = useRef(null);
+
+  useEffect(() => {
+    // Title animation
+    gsap.fromTo(
+      titleRef.current,
+      { 
+        y: 100, 
+        opacity: 0,
+        scale: 0.8
+      },
+      {
+        y: 0,
+        opacity: 1,
+        scale: 1,
+        duration: 1.2,
+        ease: "power3.out",
+        scrollTrigger: {
+          trigger: titleRef.current,
+          start: "top 80%",
+          end: "bottom 20%",
+          toggleActions: "play none none reverse"
+        }
+      }
+    );
+
+    // First section animation (About Our Donors)
+    gsap.fromTo(
+      section1Ref.current.children,
+      { 
+        x: -100, 
+        opacity: 0 
+      },
+      {
+        x: 0,
+        opacity: 1,
+        duration: 1,
+        stagger: 0.3,
+        ease: "power2.out",
+        scrollTrigger: {
+          trigger: section1Ref.current,
+          start: "top 75%",
+          end: "bottom 25%",
+          toggleActions: "play none none reverse"
+        }
+      }
+    );
+
+    // Second section animation (For Patients)
+    gsap.fromTo(
+      section2Ref.current.children,
+      { 
+        x: 100, 
+        opacity: 0 
+      },
+      {
+        x: 0,
+        opacity: 1,
+        duration: 1,
+        stagger: 0.3,
+        ease: "power2.out",
+        scrollTrigger: {
+          trigger: section2Ref.current,
+          start: "top 75%",
+          end: "bottom 25%",
+          toggleActions: "play none none reverse"
+        }
+      }
+    );
+
+    // Decorative line animation
+    gsap.fromTo(
+      decorativeLineRef.current,
+      { 
+        scaleX: 0,
+        transformOrigin: "left center"
+      },
+      {
+        scaleX: 1,
+        duration: 1.5,
+        ease: "power2.out",
+        scrollTrigger: {
+          trigger: decorativeLineRef.current,
+          start: "top 80%",
+          end: "bottom 20%",
+          toggleActions: "play none none reverse"
+        }
+      }
+    );
+
+    // Third section animation (Blood Donation Process)
+    gsap.fromTo(
+      section3Ref.current.children,
+      { 
+        y: 100, 
+        opacity: 0 
+      },
+      {
+        y: 0,
+        opacity: 1,
+        duration: 1,
+        stagger: 0.2,
+        ease: "power2.out",
+        scrollTrigger: {
+          trigger: section3Ref.current,
+          start: "top 75%",
+          end: "bottom 25%",
+          toggleActions: "play none none reverse"
+        }
+      }
+    );
+
+    // Cleanup function
+    return () => {
+      ScrollTrigger.getAll().forEach(trigger => trigger.kill());
+    };
+  }, []);
+
   return (
     <div className="max-w-7xl h-auto mx-auto px-4 p-8 sm:px-6 lg:px-8 ">
-      <h1 className="text-[6rem] relative font-bold text-center text-zinc-800 mb-12 font-[Alice]">
+      <h1 ref={titleRef} className="text-[6rem] relative font-bold text-center text-zinc-800 mb-12 font-[Alice]">
         "Every Drop, Every Life"
         <div className="absolute z-10 top-[70%] left-[-15%]">
           <svg
@@ -29,7 +157,7 @@ const About = () => {
         </div>
       </h1>
       {/* First Section */}
-      <section className="flex flex-col z-4 md:flex-row items-center gap-8 mb-16">
+      <section ref={section1Ref} className="flex flex-col z-4 md:flex-row items-center gap-8 mb-16">
         <div className="w-full md:w-1/2 rounded-xl overflow-hidden shadow-[0_2.8px_2.2px_rgba(0,_0,_0,_0.034),_0_6.7px_5.3px_rgba(0,_0,_0,_0.048),_0_12.5px_10px_rgba(0,_0,_0,_0.06),_0_22.3px_17.9px_rgba(0,_0,_0,_0.072),_0_41.8px_33.4px_rgba(0,_0,_0,_0.086),_0_100px_80px_rgba(0,_0,_0,_0.12)] hover:scale-[1.01] transition-all">
           <img
             src={b1}
@@ -58,7 +186,7 @@ const About = () => {
       </section>
 
       {/* Second Section */}
-      <section className="relative flex flex-col md:flex-row-reverse items-center gap-8 mb-16">
+      <section ref={section2Ref} className="relative flex flex-col md:flex-row-reverse items-center gap-8 mb-16">
         <div className="w-full md:w-1/2 rounded-xl shadow-[0_2.8px_2.2px_rgba(0,_0,_0,_0.034),_0_6.7px_5.3px_rgba(0,_0,_0,_0.048),_0_12.5px_10px_rgba(0,_0,_0,_0.06),_0_22.3px_17.9px_rgba(0,_0,_0,_0.072),_0_41.8px_33.4px_rgba(0,_0,_0,_0.086),_0_100px_80px_rgba(0,_0,_0,_0.12)] hover:scale-[1.01] transition-all">
           <img
             src={b2}
@@ -100,7 +228,7 @@ const About = () => {
       </div>
 
       {/* Third Section */}
-      <section className="z-40 relative flex flex-col md:flex-row items-center gap-8">
+      <section ref={section3Ref} className="z-40 relative flex flex-col md:flex-row items-center gap-8">
         <div className="w-full rounded-xl md:w-1/2 shadow-[0_2.8px_2.2px_rgba(0,_0,_0,_0.034),_0_6.7px_5.3px_rgba(0,_0,_0,_0.048),_0_12.5px_10px_rgba(0,_0,_0,_0.06),_0_22.3px_17.9px_rgba(0,_0,_0,_0.072),_0_41.8px_33.4px_rgba(0,_0,_0,_0.086),_0_100px_80px_rgba(0,_0,_0,_0.12)] hover:scale-[1.01] transition-all">
           <img
             src={b3}

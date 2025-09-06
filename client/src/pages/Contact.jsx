@@ -1,22 +1,151 @@
-import React from 'react'
+import React, { useEffect, useRef } from 'react'
+import { gsap } from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import heroImg from '../assets/contact.jpg'
 
+// Register ScrollTrigger plugin
+gsap.registerPlugin(ScrollTrigger)
+
 const Contact = () => {
+  // Refs for animation elements
+  const titleRef = useRef(null)
+  const imageRef = useRef(null)
+  const formRef = useRef(null)
+  const backgroundRef = useRef(null)
+
   const handleSubmit = (e) => {
     e.preventDefault()
   }
 
+  useEffect(() => {
+    // Title animation
+    gsap.fromTo(
+      titleRef.current,
+      { 
+        y: 80, 
+        opacity: 0,
+        scale: 0.9
+      },
+      {
+        y: 0,
+        opacity: 1,
+        scale: 1,
+        duration: 1.2,
+        ease: "power3.out",
+        scrollTrigger: {
+          trigger: titleRef.current,
+          start: "top 85%",
+          end: "bottom 15%",
+          toggleActions: "play none none reverse"
+        }
+      }
+    )
+
+    // Background gradient animation
+    gsap.fromTo(
+      backgroundRef.current,
+      { 
+        scaleY: 0,
+        transformOrigin: "center bottom"
+      },
+      {
+        scaleY: 1,
+        duration: 1.5,
+        ease: "power2.out",
+        scrollTrigger: {
+          trigger: backgroundRef.current,
+          start: "top 90%",
+          end: "bottom 10%",
+          toggleActions: "play none none reverse"
+        }
+      }
+    )
+
+    // Image animation (slides in from left)
+    gsap.fromTo(
+      imageRef.current,
+      { 
+        x: -100, 
+        opacity: 0,
+        rotation: -5
+      },
+      {
+        x: 0,
+        opacity: 1,
+        rotation: 0,
+        duration: 1.2,
+        ease: "power2.out",
+        scrollTrigger: {
+          trigger: imageRef.current,
+          start: "top 80%",
+          end: "bottom 20%",
+          toggleActions: "play none none reverse"
+        }
+      }
+    )
+
+    // Form animation (slides in from right)
+    gsap.fromTo(
+      formRef.current,
+      { 
+        x: 100, 
+        opacity: 0,
+        rotation: 5
+      },
+      {
+        x: 0,
+        opacity: 1,
+        rotation: 0,
+        duration: 1.2,
+        ease: "power2.out",
+        scrollTrigger: {
+          trigger: formRef.current,
+          start: "top 80%",
+          end: "bottom 20%",
+          toggleActions: "play none none reverse"
+        }
+      }
+    )
+
+    // Form elements staggered animation
+    gsap.fromTo(
+      formRef.current.querySelectorAll('div, input, textarea, button'),
+      { 
+        y: 30, 
+        opacity: 0 
+      },
+      {
+        y: 0,
+        opacity: 1,
+        duration: 0.8,
+        stagger: 0.1,
+        ease: "power2.out",
+        scrollTrigger: {
+          trigger: formRef.current,
+          start: "top 70%",
+          end: "bottom 30%",
+          toggleActions: "play none none reverse"
+        }
+      }
+    )
+
+    // Cleanup function
+    return () => {
+      ScrollTrigger.getAll().forEach(trigger => trigger.kill())
+    }
+  }, [])
+
   return (
     <section className="relative w-full">
-      <div className="absolute h-[30vh] w-screen bg-gradient-to-r from-[#588d43] via-[#68F432] to-[#588d43] -z-10 top-[25rem]"></div>
+      <div ref={backgroundRef} className="absolute h-[30vh] w-screen bg-gradient-to-r from-[#588d43] via-[#68F432] to-[#588d43] -z-10 top-[25rem]"></div>
 
       <div className="max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-8 pt-8">
         <div className="text-center">
-        <h1 className='text-7xl font-bold text-zinc-800 mb-14 font-[Alice]'>Be a Lifesaver. Connect With Us.</h1>
+        <h1 ref={titleRef} className='text-7xl font-bold text-zinc-800 mb-14 font-[Alice]'>Be a Lifesaver. Connect With Us.</h1>
         </div>
         <div className="grid h-[50rem] grid-cols-1 lg:grid-cols-2 gap-10 items-stretch">
           {/* Left: Demo image */}
-          <div className="z-10 rounded-3xl overflow-hidden ring-1 ring-gray-200 shadow-[0_2.8px_2.2px_rgba(0,_0,_0,_0.034),_0_6.7px_5.3px_rgba(0,_0,_0,_0.048),_0_12.5px_10px_rgba(0,_0,_0,_0.06),_0_22.3px_17.9px_rgba(0,_0,_0,_0.072),_0_41.8px_33.4px_rgba(0,_0,_0,_0.086),_0_100px_80px_rgba(0,_0,_0,_0.12)]">
+          <div ref={imageRef} className="z-10 rounded-3xl overflow-hidden ring-1 ring-gray-200 shadow-[0_2.8px_2.2px_rgba(0,_0,_0,_0.034),_0_6.7px_5.3px_rgba(0,_0,_0,_0.048),_0_12.5px_10px_rgba(0,_0,_0,_0.06),_0_22.3px_17.9px_rgba(0,_0,_0,_0.072),_0_41.8px_33.4px_rgba(0,_0,_0,_0.086),_0_100px_80px_rgba(0,_0,_0,_0.12)]">
             <img
               src={heroImg}
               alt="Modern hospital building for blood donation"
@@ -25,7 +154,7 @@ const Contact = () => {
           </div>
 
           {/* Right: Form */}
-          <div className="z-10 bg-white rounded-3xl ring-1 ring-gray-200 shadow-[0_2.8px_2.2px_rgba(0,_0,_0,_0.034),_0_6.7px_5.3px_rgba(0,_0,_0,_0.048),_0_12.5px_10px_rgba(0,_0,_0,_0.06),_0_22.3px_17.9px_rgba(0,_0,_0,_0.072),_0_41.8px_33.4px_rgba(0,_0,_0,_0.086),_0_100px_80px_rgba(0,_0,_0,_0.12)] p-8 lg:p-10">
+          <div ref={formRef} className="z-10 bg-white rounded-3xl ring-1 ring-gray-200 shadow-[0_2.8px_2.2px_rgba(0,_0,_0,_0.034),_0_6.7px_5.3px_rgba(0,_0,_0,_0.048),_0_12.5px_10px_rgba(0,_0,_0,_0.06),_0_22.3px_17.9px_rgba(0,_0,_0,_0.072),_0_41.8px_33.4px_rgba(0,_0,_0,_0.086),_0_100px_80px_rgba(0,_0,_0,_0.12)] p-8 lg:p-10">
             <div className="mb-8">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EEFFD6] text-[#2c7f1f] text-xs font-medium ring-1 ring-[#CFF7A1]">
                 Blood Donation Support

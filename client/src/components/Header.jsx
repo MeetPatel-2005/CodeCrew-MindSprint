@@ -1,4 +1,3 @@
-import React from 'react'
 import { AppContent } from "../context/AppContext";
 import { Link } from "react-router-dom";
 import Marquee from "react-fast-marquee";
@@ -13,64 +12,64 @@ import { MdOutlineHealthAndSafety } from "react-icons/md";
 import '../index.css'
 
 const Header = () => {
+  // const {userData} = useContext(AppContent)
+
   return (
     <>
-      {/* Background decorative elements */}
-      <FaPlus className="t1 text-[#8cff5e] text-[25rem] sm:text-[35rem] lg:text-[45rem] absolute rotate-[25deg] left-[-5%] sm:left-[-2%] top-[5%] sm:top-[2%] z-[7] opacity-20" />
-      <MdOutlineHealthAndSafety className="t2 text-[#8cff5e] text-[20rem] sm:text-[30rem] lg:text-[40rem] absolute rotate-[-15deg] right-[2%] sm:right-[5%] top-[8%] sm:top-[3%] z-[7] opacity-20" />
-      
-      <div className="w-full h-auto flex flex-col justify-center items-center text-center gap-6 sm:gap-8 p-4 sm:p-6 lg:p-8 relative z-10">
-        {/* Main heading with better responsive design */}
-        <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-[5rem] font-extrabold tracking-tight w-full max-w-6xl z-[9] leading-[1.1] sm:leading-[1.2] mb-4 text-zinc-800 mt-20 sm:mt-24 lg:mt-[10.5rem] font-[Alice] px-4">
+      <FaPlus className="t1 text-[#8cff5e] text-[45rem] absolute rotate-[25deg] left-[-1%] top-[2%] z-[7]" />
+      <MdOutlineHealthAndSafety className="t2 text-[#8cff5e] text-[40rem] absolute rotate-[-15deg] right-[5%] top-[3%] z-[7]"  />
+      <div className="w-full h-screen flex flex-col justify-center items-center text-center gap-4 sm:gap-6 p-4 sm:p-6 lg:p-6">
+        {/* <img src={assets.header_img} alt="" className='w-36 h-36 rounded-full mb-6' /> */}
+
+        {/* <h1 className='flex items-center gap-2 text-xl sm:text-3xl font-medium mb-2'>Hey {userData ? userData.name : 'Developer'}!
+            <img className='w-8 aspect-square' src={assets.hand_wave} alt="" />
+        </h1> */}
+        <h1 className="text-[5rem] font-extrabold tracking-tight w-[55vw] z-[9] leading-[1.2] mb-2 text-zinc-800 mt-[10.5rem] font-[Alice]">
           Connecting Blood Donors with Patients in Urgent Need
         </h1>
-        
-        {/* Subtitle with better responsive design */}
-        <h3 className="text-lg sm:text-xl md:text-2xl lg:text-[1.5rem] w-full max-w-4xl text-center text-gray-600 z-[9] leading-relaxed px-4">
+        <h3 className="text-[1.5rem] w-[43vw] text-center text-gray-600 z-[9]">
           A trusted platform that instantly connects patients in urgent need of
           blood with nearby donors, making life-saving help faster and more
           accessible.
         </h3>
 
-        {/* CTA Button with better styling */}
         <Link
           to="/login"
-          className="px-8 py-4 border-2 border-[#68F432] rounded-full bg-[#68F432] hover:bg-white hover:text-[#68F432] text-white font-semibold text-lg transition-all duration-300 mt-6 shadow-lg hover:shadow-xl transform hover:scale-105"
+          className="px-3 py-3 border border-[#68F432] rounded-full bg-[#68F432] hover:bg-white transition-all mt-5"
         >
           Get Started
         </Link>
 
         <div className="">
           <h3 className="font-medium mt-14 text-lg">
-            Trusted by patients, donors, and hospitals alike
+            Trusted by patients, donors, and hospitals alike:
           </h3>
-          <div className="w-full overflow-hidden">
+          <div className="mt-8 w-[50vw]">
             <Marquee
               pauseOnHover={true}
-              speed={50}
+              speed={60}
               gradient={true}
-              gradientWidth={80}
+              gradientWidth={100}
               autoFill={true}
-              className="py-4"
             >
-              <div className="flex items-center gap-8 sm:gap-12">
-                <div className="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center bg-white rounded-full shadow-md p-2">
-                  <img src={Blood_1} alt="Blood Donation" className="object-contain w-full h-full" />
+              <div className="flex items-center gap-12">
+                <div className="w-20 h-20 flex items-center justify-center">
+                  <img src={Blood_1} alt="Badge 1" className="object-contain" />
                 </div>
-                <div className="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center bg-white rounded-full shadow-md p-2">
-                  <img src={Blood_2} alt="Medical Care" className="object-contain w-full h-full" />
+                <div className="w-20 h-20 flex items-center justify-center">
+                  <img src={Blood_2} alt="Badge 2" className="object-contain" />
                 </div>
-                <div className="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center bg-white rounded-full shadow-md p-2">
-                  <img src={Blood_3} alt="Health Services" className="object-contain w-full h-full" />
+                <div className="w-20 h-20 flex items-center justify-center">
+                  <img src={Blood_3} alt="Badge 3" className="object-contain" />
                 </div>
-                <div className="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center bg-white rounded-full shadow-md p-2">
-                  <img src={Blood_4} alt="Location Services" className="object-contain w-full h-full" />
+                <div className="w-20 h-20 flex items-center justify-center">
+                  <img src={Blood_4} alt="Badge 4" className="object-contain" />
                 </div>
-                <div className="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center bg-white rounded-full shadow-md p-2">
-                  <img src={Blood_5} alt="Medical Support" className="object-contain w-full h-full" />
+                <div className="w-20 h-20 flex items-center justify-center">
+                  <img src={Blood_5} alt="Badge 5" className="object-contain" />
                 </div>
-                <div className="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center bg-white rounded-full shadow-md p-2 mr-6">
-                  <img src={Blood_6} alt="Healthcare" className="object-contain w-full h-full" />
+                <div className="w-20 h-20 flex items-center justify-center mr-6">
+                  <img src={Blood_6} alt="Badge 6" className="object-contain" />
                 </div>
               </div>
             </Marquee>

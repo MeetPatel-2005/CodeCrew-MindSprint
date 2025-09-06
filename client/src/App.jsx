@@ -9,12 +9,7 @@ import "react-toastify/dist/ReactToastify.css"
 import MouseFollower from './components/Mousefollower'
 import Loader from './components/Loader'
 
-import DonorDashboard from './pages/DonorDashboard'
-import DonorProfile from './pages/DonorProfile'
-import PatientDashboard from './pages/PatientDashboard'
 import RoleSelect from './pages/RoleSelect'
-import PatientOnboarding from './pages/PatientOnboarding'
-import ProfileSettings from './pages/ProfileSettings'
 
 const App = () => {
   const [loading, setLoading] = useState(true);
@@ -82,11 +77,6 @@ const App = () => {
            <Route path='/auth' element={<Login />} />
            <Route path='/email-verify' element={<EmailVerify />} />
            <Route path='/reset-password' element={<ResetPassword />} />
-           <Route path='/donor-profile' element={<DonorProfile />} />
-           <Route path='/donor-dashboard' element={<DonorDashboard />} />
-           <Route path='/patient-dashboard' element={<PatientDashboard />} />
-           <Route path='/patient-onboarding' element={<PatientOnboarding />} />
-           <Route path='/profile-settings' element={<ProfileSettings />} />
          </Routes>
       </div>
     </>

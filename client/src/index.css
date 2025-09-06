@@ -10,6 +10,16 @@
   font-family: "Outfit", sans-serif;
 }
 
+html, body {
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.wrapper {
+  overflow: visible; /* not scroll */
+}
+
 
 
 .Link::before {

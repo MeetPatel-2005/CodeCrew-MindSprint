@@ -7,6 +7,7 @@ import { toast } from "react-toastify";
 import { Link } from "react-router-dom";
 import logo from "../assets/logo.png"
 import "../index.css";
+import { FiLogOut } from "react-icons/fi";
 
 const Navbar = ({ scrollToSection }) => {
   const navigate = useNavigate();
@@ -114,26 +115,29 @@ const Navbar = ({ scrollToSection }) => {
           </div>
 
           {userData ? (
-            <div className="w-8 h-8 flex justify-center items-center rounded-full bg-black text-white relative group">
-              {userData.name?.[0]?.toUpperCase() || "U"}
-              <div className="absolute hidden group-hover:block top-0 right-0 z-10 text-black rounded pt-10">
-                <ul className="list-none m-0 p-2 bg-gray-100 text-sm">
+            <div className="relative group flex items-center">
+              <div className="w-10 h-10 flex justify-center items-center rounded-full bg-white border-2 border-[#68F432] text-[#68F432] font-bold text-lg shadow-md transition-all duration-300 group-hover:shadow-lg cursor-pointer">
+                {userData.name?.[0]?.toUpperCase() || "U"}
+              </div>
+              <div className="absolute right-0 top-12 min-w-[180px] bg-white border border-[#68F432] rounded-xl shadow-xl opacity-0 group-hover:opacity-100 group-hover:translate-y-0 translate-y-2 transition-all duration-300 z-20 pointer-events-none group-hover:pointer-events-auto">
+                <ul className="list-none m-0 p-3 text-base">
                   {!userData.isAccountVerified && (
                     <li>
                       <button
                         onClick={sendVerificationOtp}
-                        className="py-1 px-2 hover:bg-gray-200 w-full text-left"
+                        className="w-full text-left py-2 px-4 rounded-lg text-[#68F432] hover:bg-[#68F432]/10 transition-colors font-medium"
                       >
-                        Verify email
+                        <span className="inline-block mr-2">🔒</span>
+                        Verify Email
                       </button>
                     </li>
                   )}
-
                   <li>
                     <button
                       onClick={logout}
-                      className="py-1 px-2 hover:bg-gray-200 w-full text-left pr-10"
+                      className="w-full text-left py-2 px-4 rounded-lg text-red-500 hover:bg-red-50 transition-colors font-medium flex justify-center items-center"
                     >
+                      <span className="inline-block mr-2"><FiLogOut /></span>
                       Logout
                     </button>
                   </li>
