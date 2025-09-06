@@ -40,9 +40,9 @@ const Navbar = ({ hideLogo = false }) => {
   }
 
   return (
-    <div className='w-full flex justify-between items-center p-4 sm:p-6 sm:px-24 absolute top-0 z-50'>
+    <div className='w-full flex justify-between items-center p-2 sm:p-3 sm:px-24 sticky top-0 z-50 bg-white shadow-sm border-b border-gray-200'>
 
-        {!hideLogo && <img src={assets.logo} alt="" className='w-28 sm:w-32' />}
+        {!hideLogo && <img src={assets.logo} alt="" className='w-24 sm:w-28' />}
 
         {userData ? 
         <div className='w-8 h-8 flex justify-center items-center rounded-full bg-black text-white relative group ml-auto'>

@@ -3,7 +3,7 @@ import { AppContent } from '../context/AppContext'
 import axios from 'axios'
 import { toast } from 'react-toastify'
 import { useNavigate } from 'react-router-dom'
-import Navbar from '../components/Navbar'
+import { navigateToRoleDashboard } from '../utils/navigation'
 
 const ProfileSettings = () => {
   const { backendUrl, userData, getUserData } = useContext(AppContent)
@@ -40,7 +40,9 @@ const ProfileSettings = () => {
       if (data.success) {
         toast.success('Profile updated successfully')
         await getUserData()
-        navigate('/patient-dashboard')
+        
+        // Navigate based on user role
+        navigateToRoleDashboard(navigate, userData?.role)
       } else {
         toast.error(data.message)
       }
@@ -55,8 +57,6 @@ const ProfileSettings = () => {
 
   return (
     <div className='min-h-screen bg-white'>
-      <Navbar hideLogo={true} />
-      
       <div className='container mx-auto px-4 py-10 max-w-2xl'>
         <div className='bg-white rounded-lg border-2 border-gray-200 shadow-sm'>
           <div className='p-6 border-b border-gray-200'>
@@ -131,7 +131,10 @@ const ProfileSettings = () => {
               
               <button 
                 type='button' 
-                onClick={() => navigate('/patient-dashboard')}
+                onClick={() => {
+                  // Navigate back based on user role
+                  navigateToRoleDashboard(navigate, userData?.role)
+                }}
                 className='px-6 py-2 border-2 border-gray-300 rounded-md text-gray-700 hover:bg-gray-50'
               >
                 Cancel

@@ -63,10 +63,14 @@ const Login = () => {
             const roleFromLogin = data.role
             if (roleFromLogin === 'donor') {
               // Check if donor profile is completed
-              const profile = await axios.get(backendUrl + '/api/donor/profile')
-              if (profile.data?.success && profile.data?.profile?.profileCompleted) {
-                navigate('/donor-dashboard')
-              } else {
+              try {
+                const profile = await axios.get(backendUrl + '/api/donor/profile')
+                if (profile.data?.success && profile.data?.profile?.profileCompleted) {
+                  navigate('/donor-dashboard')
+                } else {
+                  navigate('/donor-profile')
+                }
+              } catch (err) {
                 navigate('/donor-profile')
               }
             } else {

@@ -1,5 +1,5 @@
 import userModel from "../models/userModel.js";
-import requestModel from "../models/requestModel.js";
+import bloodRequestModel from "../models/bloodRequestModel.js";
 
 // Save donor profile details
 export const saveDonorProfile = async (req, res) => {
@@ -84,40 +84,12 @@ export const getDonorDashboard = async (req, res) => {
             return res.json({ success: false, message: 'Please complete your profile first' });
         }
 
-        // Seed a few demo requests if DB empty (dev convenience)
-        const totalRequests = await requestModel.countDocuments();
-        if (totalRequests === 0) {
-            const seed = [
-                { patientName: 'Emergency Patient #1247', bloodGroup: user.bloodGroup, unitsNeeded: 2, urgency: 'Critical', hospital: 'City General Hospital', distanceKm: 1.2 },
-                { patientName: 'Emergency Patient #1248', bloodGroup: user.bloodGroup, unitsNeeded: 1, urgency: 'High', hospital: 'Medical Center East', distanceKm: 2.8 },
-                { patientName: 'Emergency Patient #1249', bloodGroup: user.bloodGroup, unitsNeeded: 3, urgency: 'Medium', hospital: 'Regional Hospital', distanceKm: 4.1 }
-            ];
-            await requestModel.insertMany(seed);
-        }
-
-        // Always add a test request for the current user's blood group if none exist
-        const userRequests = await requestModel.find({
-            bloodGroup: user.bloodGroup,
-            status: 'open'
-        });
-        
-        if (userRequests.length === 0) {
-            const testRequest = new requestModel({
-                patientName: 'Test Patient #9999',
-                bloodGroup: user.bloodGroup,
-                unitsNeeded: 1,
-                urgency: 'High',
-                hospital: 'Test Hospital',
-                distanceKm: 0.5,
-                status: 'open'
-            });
-            await testRequest.save();
-        }
+        // No dummy data - only show real requests from database
 
         // Nearby open requests for donor's blood group
-        const requests = await requestModel.find({
+        const requests = await bloodRequestModel.find({
             bloodGroup: user.bloodGroup,
-            status: 'open'
+            status: 'active'
         }).sort({ createdAt: -1 }).limit(10);
 
         // Build response structures matching frontend needs
@@ -135,8 +107,8 @@ export const getDonorDashboard = async (req, res) => {
             bloodGroup: r.bloodGroup,
             unitsNeeded: r.unitsNeeded,
             urgency: r.urgency,
-            hospital: r.hospital,
-            distance: `${r.distanceKm?.toFixed(1) || '1.0'} km`,
+            hospital: r.hospitalName,
+            distance: '1.0 km', // Default distance since we don't have coordinates yet
             timeAgo: timeAgo(r.createdAt)
         }));
 
@@ -176,20 +148,25 @@ export const acceptRequest = async (req, res) => {
     try {
         const userId = req.userId;
         const { requestId } = req.body;
+        
+        console.log('Donor accepting request:', requestId, 'donor:', userId);
+        
         const user = await userModel.findById(userId);
         if (!user || user.role !== 'donor') {
             return res.json({ success: false, message: 'Donor not found or not a donor' });
         }
 
-        const reqDoc = await requestModel.findById(requestId);
-        if (!reqDoc || reqDoc.status !== 'open') {
+        const reqDoc = await bloodRequestModel.findById(requestId);
+        console.log('Found request document:', reqDoc);
+        
+        if (!reqDoc || reqDoc.status !== 'active') {
             return res.json({ success: false, message: 'Request not available' });
         }
         
-        // Update request status
-        reqDoc.status = 'accepted';
-        reqDoc.acceptedBy = user._id;
-        await reqDoc.save();
+        // Add donor to accepted donors list
+        await reqDoc.addDonor(userId, 'Accepted via donor dashboard');
+        
+        console.log('Added donor to request. Updated request:', reqDoc);
         
         // Update donor's stats
         user.totalDonations += 1;
@@ -205,6 +182,7 @@ export const acceptRequest = async (req, res) => {
             }
         });
     } catch (error) {
+        console.error('Error in acceptRequest:', error);
         return res.json({ success: false, message: error.message });
     }
 };
@@ -218,13 +196,73 @@ export const declineRequest = async (req, res) => {
             return res.json({ success: false, message: 'Donor not found or not a donor' });
         }
 
-        const reqDoc = await requestModel.findById(requestId);
-        if (!reqDoc || reqDoc.status !== 'open') {
+        const reqDoc = await bloodRequestModel.findById(requestId);
+        if (!reqDoc || reqDoc.status !== 'active') {
             return res.json({ success: false, message: 'Request not available' });
         }
-        reqDoc.status = 'declined';
-        await reqDoc.save();
-        return res.json({ success: true });
+        
+        // Remove donor from accepted donors if they were previously accepted
+        await reqDoc.removeDonor(userId);
+        
+        return res.json({ success: true, message: 'Request declined' });
+    } catch (error) {
+        return res.json({ success: false, message: error.message });
+    }
+};
+
+export const getPatientDetails = async (req, res) => {
+    try {
+        const { patientId } = req.params;
+        console.log('Patient ID:', patientId, 'Type:', typeof patientId);
+        
+        const patient = await userModel.findById(patientId).select('-password -resetOtp -resetOtpExpiry');
+        
+        if (!patient) {
+            return res.json({ success: false, message: 'Patient not found' });
+        }
+
+        return res.json({ success: true, patient });
+    } catch (error) {
+        console.error('Error in getPatientDetails:', error);
+        return res.json({ success: false, message: error.message });
+    }
+};
+
+// Get accepted requests where donor can chat with patients
+export const getAcceptedRequests = async (req, res) => {
+    try {
+        const userId = req.userId;
+        console.log('Donor ID:', userId, 'Type:', typeof userId);
+        
+        const user = await userModel.findById(userId);
+        
+        if (!user || user.role !== 'donor') {
+            return res.json({ success: false, message: 'Donor not found or not a donor' });
+        }
+
+        // Find requests where this donor has accepted
+        const acceptedRequests = await bloodRequestModel.find({
+            'acceptedDonors.donorId': userId,
+            status: 'active'
+        }).populate('patientId', 'name phone bloodGroup');
+
+        const chatRequests = acceptedRequests.map(request => ({
+            requestId: request._id,
+            patientId: request.patientId._id,
+            patientName: request.patientId.name,
+            patientBloodGroup: request.patientId.bloodGroup,
+            patientPhone: request.patientId.phone,
+            bloodGroup: request.bloodGroup,
+            unitsNeeded: request.unitsNeeded,
+            urgency: request.urgency,
+            hospitalName: request.hospitalName,
+            acceptedAt: request.acceptedDonors.find(d => d.donorId.toString() === userId.toString())?.acceptedAt
+        }));
+
+        return res.json({
+            success: true,
+            acceptedRequests: chatRequests
+        });
     } catch (error) {
         return res.json({ success: false, message: error.message });
     }

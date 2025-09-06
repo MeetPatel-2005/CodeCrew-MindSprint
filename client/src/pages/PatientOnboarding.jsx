@@ -60,67 +60,101 @@ const PatientOnboarding = () => {
   }
 
   return (
-    <div className='min-h-screen bg-white'>
-      <div className='container mx-auto px-4 py-10 max-w-2xl'>
-        <div className='bg-white rounded-lg border-2 border-gray-200 shadow-sm p-8'>
-        <h1 className='text-2xl font-semibold mb-2'>Patient Details</h1>
-        <p className='text-gray-600 mb-6'>Please complete your details. Fields marked with * are required.</p>
+    <div className='min-h-screen bg-gray-50 py-8'>
+      <div className='max-w-2xl mx-auto px-4'>
+        <div className='bg-white rounded-lg shadow-lg p-8'>
+          <div className='text-center mb-8'>
+            <h1 className='text-3xl font-bold text-gray-900 mb-2'>Complete Your Patient Profile</h1>
+            <p className='text-gray-600'>Please provide the following information to request blood donations. Fields marked with * are required.</p>
+          </div>
 
-        <div className='space-y-4'>
-          <div>
-            <label className='block text-sm mb-1'>Full Name *</label>
-            <input className='w-full border rounded-md px-3 py-2' value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
-            {!form.name && <p className='text-xs text-red-600 mt-1'>Name is required</p>}
+          <div className='space-y-6'>
+            <div>
+              <label className='block text-sm font-medium text-gray-700 mb-2'>Full Name *</label>
+              <input 
+                className='w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500' 
+                value={form.name} 
+                onChange={e => setForm({ ...form, name: e.target.value })} 
+                placeholder="Enter your full name"
+              />
+              {!form.name && <p className='text-xs text-red-600 mt-1'>Name is required</p>}
+            </div>
+            <div>
+              <label className='block text-sm font-medium text-gray-700 mb-2'>Phone Number *</label>
+              <input 
+                className='w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500' 
+                value={form.phone} 
+                onChange={e => setForm({ ...form, phone: e.target.value })} 
+                placeholder="+1 (555) 123-4567"
+              />
+              {!form.phone && <p className='text-xs text-red-600 mt-1'>Phone is required</p>}
+            </div>
+            <div>
+              <label className='block text-sm font-medium text-gray-700 mb-2'>Blood Group *</label>
+              <select 
+                className='w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500' 
+                value={form.bloodGroup} 
+                onChange={e => setForm({ ...form, bloodGroup: e.target.value })}
+              >
+                <option value=''>Select Blood Group</option>
+                {['O+','O-','A+','A-','B+','B-','AB+','AB-'].map(b => <option key={b} value={b}>{b}</option>)}
+              </select>
+              {!form.bloodGroup && <p className='text-xs text-red-600 mt-1'>Blood group is required</p>}
+            </div>
+            <div>
+              <label className='block text-sm font-medium text-gray-700 mb-2'>Location</label>
+              <input 
+                className='w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500' 
+                value={form.location} 
+                onChange={e => setForm({ ...form, location: e.target.value })} 
+                placeholder="City, State"
+              />
+            </div>
           </div>
-          <div>
-            <label className='block text-sm mb-1'>Phone *</label>
-            <input className='w-full border rounded-md px-3 py-2' value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} />
-            {!form.phone && <p className='text-xs text-red-600 mt-1'>Phone is required</p>}
-          </div>
-          {/* Hospital removed from onboarding per requirement */}
-          <div>
-            <label className='block text-sm mb-1'>Blood Group *</label>
-            <select className='w-full border rounded-md px-3 py-2' value={form.bloodGroup} onChange={e => setForm({ ...form, bloodGroup: e.target.value })}>
-              <option value=''>Select</option>
-              {['O+','O-','A+','A-','B+','B-','AB+','AB-'].map(b => <option key={b} value={b}>{b}</option>)}
-            </select>
-            {!form.bloodGroup && <p className='text-xs text-red-600 mt-1'>Blood group is required</p>}
-          </div>
-          <div>
-            <label className='block text-sm mb-1'>Location</label>
-            <input className='w-full border rounded-md px-3 py-2' value={form.location} onChange={e => setForm({ ...form, location: e.target.value })} />
-          </div>
-        </div>
 
-        <div className='flex items-center gap-3 mt-6'>
-          <button className='px-4 py-2 rounded-md bg-indigo-600 text-white' onClick={saveProfile}>Save Details</button>
-          {!isVerified && (
-            <button className='px-4 py-2 rounded-md border' onClick={sendVerifyOtp}>Verify Email</button>
+          <div className='flex flex-col sm:flex-row gap-4 justify-center mt-8'>
+            <button 
+              className='px-8 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500' 
+              onClick={saveProfile}
+            >
+              Save Details
+            </button>
+            {!isVerified && (
+              <button 
+                className='px-8 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500' 
+                onClick={sendVerifyOtp}
+              >
+                Verify Email
+              </button>
+            )}
+          </div>
+
+          {isVerified && (
+            <div className='mt-6 flex items-center justify-center gap-3'>
+              <span className='inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-100 text-green-700 animate-pulse'>✓</span>
+              <span className='text-green-700 font-medium'>Email verified successfully!</span>
+            </div>
           )}
-        </div>
 
-        {isVerified && (
-          <div className='mt-6 flex items-center gap-3'>
-            <span className='inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-100 text-green-700 animate-pulse'>✓</span>
-            <span className='text-green-700'>Email verified</span>
+          <div className='mt-8 text-center'>
+            <button
+              disabled={requiredMissing || !isVerified}
+              className={`px-8 py-3 rounded-lg text-white font-medium focus:outline-none focus:ring-2 ${
+                requiredMissing || !isVerified 
+                  ? 'bg-gray-400 cursor-not-allowed' 
+                  : 'bg-red-600 hover:bg-red-700 focus:ring-red-500'
+              }`}
+              onClick={() => window.location.assign('/patient-dashboard')}
+            >
+              {requiredMissing || !isVerified ? 'Complete Required Fields' : 'Continue to Dashboard'}
+            </button>
+            {(requiredMissing || !isVerified) && (
+              <p className='text-sm text-gray-500 mt-3'>
+                {requiredMissing ? 'Please fill all required fields. ' : ''}
+                {!isVerified ? 'Please verify your email before continuing.' : ''}
+              </p>
+            )}
           </div>
-        )}
-
-        <div className='mt-6'>
-          <button
-            disabled={requiredMissing || !isVerified}
-            className={`px-5 py-2 rounded-md text-white ${requiredMissing || !isVerified ? 'bg-gray-400' : 'bg-green-600 hover:bg-green-700'}`}
-            onClick={() => window.location.assign('/patient-dashboard')}
-          >
-            Continue to Dashboard
-          </button>
-          {(requiredMissing || !isVerified) && (
-            <p className='text-xs text-gray-500 mt-2'>
-              {requiredMissing ? 'Please fill all required fields. ' : ''}
-              {!isVerified ? 'Please verify your email before continuing.' : ''}
-            </p>
-          )}
-        </div>
         </div>
       </div>
     </div>

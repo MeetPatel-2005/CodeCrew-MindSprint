@@ -66,3 +66,20 @@ export const updateUserProfile = async (req, res) => {
         return res.json({ success: false, message: error.message });
     }
 }
+
+// Get user details by ID (for chat functionality)
+export const getUserById = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        
+        const user = await userModel.findById(userId).select('-password -resetOtp -resetOtpExpiry');
+        
+        if (!user) {
+            return res.json({ success: false, message: 'User not found' });
+        }
+
+        return res.json({ success: true, user });
+    } catch (error) {
+        return res.json({ success: false, message: error.message });
+    }
+}
