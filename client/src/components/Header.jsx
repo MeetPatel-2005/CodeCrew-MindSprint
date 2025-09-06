@@ -36,7 +36,7 @@ const Header = () => {
 
         <div className="">
           <h3 className="font-medium mt-14 text-lg">
-            Trusted by patients, donors, and hospitals alike:
+            Trusted by patients, donors, and hospitals alike
           </h3>
           <div className="mt-8 w-[50vw]">
             <Marquee

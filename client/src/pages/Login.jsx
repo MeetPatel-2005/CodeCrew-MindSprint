@@ -116,8 +116,8 @@ const Login = () => {
 
           <p className="text-center text-sm mb-6 text-gray-600">
             {state === "Sign Up"
-              ? "Create your Account"
-              : "Login to your account!"}
+              ? "Your First Step to Saving Lives"
+              : "Welcome Back, Lifesaver"}
           </p>
 
           <form onSubmit={onSubmitHandler}>
