@@ -8,7 +8,6 @@ import { ToastContainer } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 import MouseFollower from './components/Mousefollower'
 import Loader from './components/Loader'
-
 import RoleSelect from './pages/RoleSelect'
 
 const App = () => {
