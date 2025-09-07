@@ -27,7 +27,7 @@ It’s a foundation for building a complete donor-patient matching and communica
 
 ---
 
-🔗 Live Website → [Lifeline – Blood Donor Connector](https://code-crew-mind-sprint.vercel.app/)
+🔗 Live Website → [Lifeline – Blood Donor Connector](https://code-crew-mind-sprint.vercel.app)
 
 ---
 
