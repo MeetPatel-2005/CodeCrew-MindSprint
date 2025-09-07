@@ -5,23 +5,25 @@
 ---
 
 ### 🚑 About the Project  
-**Lifeline** is a hackathon project that connects patients in urgent need with **nearby verified blood donors** within a specific radius.  
-It leverages **geo-based matching, real-time notifications, and consent-first communication** to save lives faster. ⚡  
+**Lifeline** is a hackathon project that simplifies blood donor–patient connections through a secure role-based login system.
+The platform allows users to register as a donor or patient, with their details stored in MongoDB, and provides a clean, intuitive UI for managing access.
+It’s a foundation for building a complete donor-patient matching and communication platform. ⚡  
 
 ---
 
 ### ✨ Key Highlights  
-- 📍 Location & radius-based donor matching  
-- 🔔 Real-time notifications  
-- ✅ Verified donor profiles  
-- ⚡ Built in 48 hours during the Mindsprint Hackathon  
+- 👥 Role-based authentication (Donor & Patient)
+- 🗄️ Secure signup & login with MongoDB
+- 🎨 Modern UI built with React + TailwindCSS
+- 📱 User-friendly design
+- ⚡ Built in just 48 hours during the Mindsprint Hackathon
 
 ---
 
 ### 🛠️ Tech Stack  
 - **Frontend:** React + TailwindCSS  
 - **Backend:** Node.js + Express + MongoDB (Geo queries)  
-- **Realtime:** Socket.IO  
+- **Database:** MongoDB 
 
 ---
 
