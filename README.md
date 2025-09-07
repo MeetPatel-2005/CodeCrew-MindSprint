@@ -4,6 +4,10 @@
 
 ---
 
+Domain :- Web Development
+
+---
+
 ### 🚑 About the Project  
 **Lifeline** is a hackathon project that simplifies blood donor–patient connections through a secure role-based login system.
 The platform allows users to register as a donor or patient, with their details stored in MongoDB, and provides a clean, intuitive UI for managing access.
