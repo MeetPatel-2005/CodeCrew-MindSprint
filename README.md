@@ -22,7 +22,6 @@ It leverages **geo-based matching, real-time notifications, and consent-first co
 - **Frontend:** React + TailwindCSS  
 - **Backend:** Node.js + Express + MongoDB (Geo queries)  
 - **Realtime:** Socket.IO  
-- **Maps:** Leaflet + OpenStreetMap  
 
 ---
 
