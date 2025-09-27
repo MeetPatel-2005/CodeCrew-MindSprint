@@ -41,3 +41,39 @@ The system provides a **secure login for admins only** (no signup option for adm
 ```bash
 git clone https://github.com/MeetPatel-2005/CodeCrew-WebWizard2025.git
 cd CodeCrew-WebWizard2025
+
+2️⃣ Install Dependencies
+
+For frontend:
+
+cd client
+npm install
+
+
+For backend:
+
+cd server
+npm install
+
+3️⃣ Setup Environment Variables
+
+Create a .env file inside the client folder and add:
+
+VITE_CURRENCY = '$'
+VITE_BACKEND_URL = "http://localhost:4000"
+
+4️⃣ Run the Project
+
+Start backend:
+
+cd server
+npm run server
+
+
+Start frontend:
+
+cd client
+npm run dev
+
+
+❤️ Built with passion at Web Wizard Hackathon 2025
