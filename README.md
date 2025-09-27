@@ -1,38 +1,43 @@
-# 🩸 Lifeline – Blood Donor Connector  
+# 📚 Library Management System – Web Wizard Hackathon 2025  
 
-[![Hackathon](https://img.shields.io/badge/Mindsprint-48H%20Hackathon-red?style=flat-square&logo=hackaday)]()  
+## 🚀 About the Project  
+This project was built for **Web Wizard Hackathon 2025** under the domain of **Web Development**.  
+The Library Management System simplifies how administrators and students interact with books and borrowing activities.  
 
----
+- **Admin Features:** Add, update, and remove books.  
+- **Student Features:** Borrow and return books with ease.  
+- **Extra:** Track due dates and manage overdue fines (optional).  
 
-Domain :- Web Development
-
----
-
-### 🚑 About the Project  
-**Lifeline** is a hackathon project that simplifies blood donor–patient connections through a secure role-based login system.
-The platform allows users to register as a donor or patient, with their details stored in MongoDB, and provides a clean, intuitive UI for managing access.
-It’s a foundation for building a complete donor-patient matching and communication platform. ⚡  
+The system provides a **secure login for admins only** (no signup option for admins) and offers a clean, user-friendly interface for managing library operations.  
 
 ---
 
-### ✨ Key Highlights  
-- 👥 Role-based authentication (Donor & Patient)
-- 🗄️ Secure signup & login with MongoDB
-- 🎨 Modern UI built with React + TailwindCSS
-- 📱 User-friendly design
-- ⚡ Built in just 48 hours during the Mindsprint Hackathon
+## ✨ Key Highlights  
+- 👨‍🏫 **Admin login only** – No signup for admin  
+- 📖 **Book management** – Add, update, remove books  
+- 🎯 **Borrow & return system** for students  
+- 🗓️ **Due date & fine tracking** (optional feature)  
+- 🎨 **Modern UI with React + TailwindCSS**  
+- ⚡ Powered by **Node.js + Express + MongoDB**  
 
 ---
 
-### 🛠️ Tech Stack  
+## 🛠️ Tech Stack  
 - **Frontend:** React + TailwindCSS  
-- **Backend:** Node.js + Express + MongoDB (Geo queries)  
-- **Database:** MongoDB 
+- **Backend:** Node.js + Express  
+- **Database:** MongoDB  
 
 ---
 
-🔗 Live Website → [Lifeline – Blood Donor Connector](https://codecrew-mindsprint-frontend.onrender.com/)
+## 🖼️ Project Preview  
+![Library Management System](./assets/website-preview.png)  
+*(Replace `./assets/website-preview.png` with the actual path of your screenshot in the repo)*  
 
 ---
 
-### ❤️ Made with passion at the Mindsprint 48H Hackathon
+## ⚙️ Setup Instructions  
+
+### 1️⃣ Clone the Repository  
+```bash
+git clone https://github.com/MeetPatel-2005/CodeCrew-WebWizard2025.git
+cd CodeCrew-WebWizard2025
