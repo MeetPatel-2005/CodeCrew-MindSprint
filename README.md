@@ -62,6 +62,19 @@ Create a .env file inside the client folder and add:
 VITE_CURRENCY = '$'
 VITE_BACKEND_URL = "http://localhost:4000"
 
+Create a .env file inside the server folder and add:
+
+JWT_SECRET="secret#text"
+NODE_ENV="development" 
+
+# Admin Credentials
+SELLER_EMAIL=librarian@example.com
+SELLER_PASSWORD=password123
+
+# MongoDB Setup
+# Replace YOUR_ACTUAL_PASSWORD with your real MongoDB password
+MONGODB_URI="mongodb+srv://meetkpatel10725_db_user:12345@cluster0.aucleob.mongodb.net/library_management_db?retryWrites=true&w=majority&appName=Cluster0"
+
 4️⃣ Run the Project
 
 Start backend:
